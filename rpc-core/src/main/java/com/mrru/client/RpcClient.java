@@ -19,7 +19,8 @@ public class RpcClient
     private static final Logger logger = LoggerFactory.getLogger(RpcClient.class);
 
     /*
-    直接使用Java的序列化方式，通过Socket传输。创建一个Socket，获取ObjectOutputStream对象，
+    直接使用Java的序列化方式，传输对象 ObjectOutputStream 和 ObjectInputStream
+    通过Socket传输。创建一个Socket，获取ObjectOutputStream对象，
     然后把需要发送的对象传进去即可，接收时获取ObjectInputStream对象，readObject()方法就可以获得一个返回的对象。
      */
     public Object sendRequest(RpcRequest rpcRequest, String host, int port){

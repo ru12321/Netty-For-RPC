@@ -18,13 +18,13 @@ public class TestClient
         //生成代理对象
         RpcClientProxy proxy = new RpcClientProxy("127.0.0.1", 9000);
         HelloService helloService = proxy.getProxy(HelloService.class);
+
         //要发送的数据
         HelloObject object = new HelloObject(27, "八月一日 开始手撸rpc");
 
         //调用RpcClientProxy的invoke方法
         String result = helloService.hello(object);
         System.out.println(result);
-
 
     }
 }
