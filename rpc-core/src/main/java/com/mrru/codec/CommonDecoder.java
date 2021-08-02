@@ -45,7 +45,8 @@ public class CommonDecoder extends ReplayingDecoder
             throw new RpcException(RpcError.UNKNOWN_PACKAGE_TYPE);
         }
 
-        int serializerCode = in.readInt();//目前值为1   取出序列化器的编号，以获得正确的反序列化方式
+        //取出序列化器的编号，以获得正确的反序列化方式！！！
+        int serializerCode = in.readInt();//目前值为1
         CommonSerializer serializer = CommonSerializer.getByCode(serializerCode);//如果是1，创建新的serializer，不然返回null
         if (serializer == null){
             logger.error("不识别的反序列化器：{}",serializerCode);

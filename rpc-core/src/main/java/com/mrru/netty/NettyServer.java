@@ -5,6 +5,7 @@ import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
 import com.mrru.registry.DefaultServiceRegistry;
 import com.mrru.serializer.JsonSerializer;
+import com.mrru.serializer.KryoSerializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -46,7 +47,8 @@ public class NettyServer implements RpcServer
                                 protected void initChannel(SocketChannel ch) throws Exception
                                 {
                                     ChannelPipeline pipeline = ch.pipeline();
-                                    pipeline.addLast(new CommonEncoder(new JsonSerializer())); //编码器处理器
+//                                    pipeline.addLast(new CommonEncoder(new JsonSerializer())); //编码器处理器
+                                    pipeline.addLast(new CommonEncoder(new KryoSerializer()));
                                     pipeline.addLast(new CommonDecoder()); //解码器处理器
                                     pipeline.addLast(new NettyServerHandler()); //数据处理器
                                 }
