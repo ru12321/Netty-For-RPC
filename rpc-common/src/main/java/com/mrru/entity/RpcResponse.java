@@ -1,7 +1,10 @@
 package com.mrru.entity;
 
 import com.mrru.enums.ResponseCode;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 
 /**
@@ -16,6 +19,8 @@ import java.io.Serializable;
 这里封装成一个RpcResponse对象：
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RpcResponse<T> implements Serializable
 {
     //响应状态码

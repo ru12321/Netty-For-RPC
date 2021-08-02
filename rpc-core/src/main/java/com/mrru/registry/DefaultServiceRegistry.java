@@ -15,16 +15,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date: 2021/8/1 15:02
  **/
 
-//DefaultServiceRegistry类型对象， 通过serviceMap保存 接口类名称<-->其实现类对象，通过后面getService调用得到接口名称对应的实现类对象
+//DefaultServiceRegistry类型对象，
+// 通过serviceMap保存 接口类名称<-->其实现类对象，通过后面getService调用得到接口名称对应的实现类对象
 
 public class DefaultServiceRegistry implements ServiceRegistry
 {
     private static final Logger logger = LoggerFactory.getLogger(DefaultServiceRegistry.class);
 
     //保存的是key-value ，接口名称-实现类对象
-    private final Map<String,Object> serviceMap = new ConcurrentHashMap<>();
+    private final static Map<String,Object> serviceMap = new ConcurrentHashMap<>();
     //保存的是 实现类名称
-    private final Set<String> registeredService = ConcurrentHashMap.newKeySet();
+    private final static Set<String> registeredService = ConcurrentHashMap.newKeySet();
 
 
     //注册服务信息  注册实现类, 比如参数service = HelloServiceImpl类型的helloService对象

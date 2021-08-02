@@ -1,11 +1,12 @@
-package com.mrru.server;
+package com.mrru.socket;
 
+import com.mrru.RpcServer;
 import com.mrru.registry.ServiceRegistry;
+import com.mrru.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.*;
@@ -15,9 +16,9 @@ import java.util.concurrent.*;
  * @author: 茹某
  * @date: 2021/8/1 10:45
  **/
-public class RpcServer
+public class SocketServer implements RpcServer
 {
-    private static final Logger logger = LoggerFactory.getLogger(RpcServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(SocketServer.class);
 
     private static final int CORE_POOL_SIZE = 5;
     private static final int MAXIMUM_POOL_SIZE = 50;
@@ -29,7 +30,7 @@ public class RpcServer
 
 
     //线程池初始化
-    public RpcServer(ServiceRegistry serviceRegistry){
+    public SocketServer(ServiceRegistry serviceRegistry){
         this.serviceRegistry = serviceRegistry;
         BlockingQueue<Runnable> workingQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
         ThreadFactory threadFactory = Executors.defaultThreadFactory();

@@ -1,5 +1,6 @@
 package com.mrru.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,8 +16,11 @@ import java.io.Serializable;
 // 就可以找到这个方法并且调用了。我们把这四个条件写到一个对象里，到时候传输时传输这个对象就行了
 @Data
 @Builder
+@AllArgsConstructor
 public class RpcRequest implements Serializable
 {
+    public RpcRequest(){}
+
     //待调用接口名称
     private String interfaceName;
 

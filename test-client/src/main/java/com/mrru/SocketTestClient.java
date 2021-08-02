@@ -1,13 +1,13 @@
 package com.mrru;
 
-import com.mrru.client.RpcClientProxy;
+import com.mrru.socket.SocketClient;
 
 /**
  * @className: TestClient
  * @author: 茹某
  * @date: 2021/8/1 11:10
  **/
-public class TestClient
+public class SocketTestClient
 {
     /*
     需要通过动态代理，生成代理对象，
@@ -16,7 +16,8 @@ public class TestClient
     public static void main(String[] args)
     {
         //生成代理对象
-        RpcClientProxy proxy = new RpcClientProxy("127.0.0.1", 9000);
+        SocketClient client = new SocketClient("127.0.0.1", 9000);
+        RpcClientProxy proxy = new RpcClientProxy(client);
         HelloService helloService = proxy.getProxy(HelloService.class);
 
         //要发送的数据
