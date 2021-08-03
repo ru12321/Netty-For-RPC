@@ -19,10 +19,12 @@ public interface CommonSerializer
     //已经根据编号获取 对应的序列化器（反序列化用到）
     static CommonSerializer getByCode(int code){
         switch (code){
-            case 1:
-                return new JsonSerializer();
             case 0:
                 return new KryoSerializer();
+            case 1:
+                return new JsonSerializer();
+            case 2:
+                return new HessianSerializer();
             default:
                 return null;
         }

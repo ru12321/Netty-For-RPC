@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mrru.entity.RpcRequest;
 import com.mrru.enums.SerializerCode;
 
+import com.mrru.exception.SerializeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +31,8 @@ public class JsonSerializer implements CommonSerializer
             return objectMapper.writeValueAsBytes(obj);
         } catch (JsonProcessingException e)
         {
-            logger.error("序列化时有错误发生: {}", e.getMessage());
-            e.printStackTrace();
-            return null;
+            logger.error("序列化时有错误发生: ",e);
+            throw new SerializeException("序列化时有错误发生");
         }
     }
 
@@ -49,9 +49,8 @@ public class JsonSerializer implements CommonSerializer
             return obj;
         } catch (IOException e)
         {
-            logger.error("反序列化时有错误发生: {}", e.getMessage());
-            e.printStackTrace();
-            return null;
+            logger.error("反序列化时有错误发生: ",e);
+            throw new SerializeException("反序列化时有错误发生");
         }
     }
     /*

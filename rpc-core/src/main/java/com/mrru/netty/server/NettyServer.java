@@ -1,10 +1,9 @@
-package com.mrru.netty;
+package com.mrru.netty.server;
 
 import com.mrru.RpcServer;
 import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
-import com.mrru.registry.DefaultServiceRegistry;
-import com.mrru.serializer.JsonSerializer;
+import com.mrru.serializer.HessianSerializer;
 import com.mrru.serializer.KryoSerializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -48,7 +47,8 @@ public class NettyServer implements RpcServer
                                 {
                                     ChannelPipeline pipeline = ch.pipeline();
 //                                    pipeline.addLast(new CommonEncoder(new JsonSerializer())); //编码器处理器
-                                    pipeline.addLast(new CommonEncoder(new KryoSerializer()));
+//                                    pipeline.addLast(new CommonEncoder(new KryoSerializer()));
+                                    pipeline.addLast(new CommonEncoder(new HessianSerializer()));
                                     pipeline.addLast(new CommonDecoder()); //解码器处理器
                                     pipeline.addLast(new NettyServerHandler()); //数据处理器
                                 }

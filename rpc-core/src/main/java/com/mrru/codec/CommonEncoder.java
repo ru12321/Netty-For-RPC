@@ -46,8 +46,8 @@ public class CommonEncoder extends MessageToByteEncoder
             out.writeInt(PackageType.RESPONSE_PACK.getCode());//1--响应
         }
 
-        //Serializer Type 标明了实际数据使用的序列化器
-        out.writeInt(serializer.getCode());//这里恒定为1，编码器解码器，要使用一样的
+        //Serializer Type   标明了实际数据使用的序列化器
+        out.writeInt(serializer.getCode());//
 
         byte[] bytes = serializer.serialize(msg);
         //Data Length 就是实际数据的长度
@@ -56,11 +56,6 @@ public class CommonEncoder extends MessageToByteEncoder
         //Data Bytes
         out.writeBytes(bytes);
 
-
     }
-
-
-
-
 
 }

@@ -1,7 +1,6 @@
 package com.mrru;
 
-import com.mrru.netty.NettyClient;
-import com.sun.org.apache.bcel.internal.generic.NEW;
+import com.mrru.netty.client.NettyClient;
 
 /**
  * @className: NettyTestClient
@@ -23,7 +22,7 @@ public class NettyTestClient
         HelloObject object = new HelloObject(82, "8.2号学Rpc");
 
         //调用invoke，将要调用的方法 封装在RpcRequest对象中
-        //连接服务器，并调用客户端 发送数据
+        //连接服务器，并调用客户端 发送数据,后经过 CommonEncoder、CommonDecoder 传到Socket连接中
         //阻塞获得返回结果
         String result = helloService.hello(object);
 

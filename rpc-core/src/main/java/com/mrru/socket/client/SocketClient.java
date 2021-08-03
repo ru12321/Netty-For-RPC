@@ -1,4 +1,4 @@
-package com.mrru.socket;
+package com.mrru.socket.client;
 
 import com.mrru.RpcClient;
 import com.mrru.entity.RpcRequest;

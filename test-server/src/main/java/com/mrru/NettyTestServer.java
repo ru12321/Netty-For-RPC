@@ -1,6 +1,6 @@
 package com.mrru;
 
-import com.mrru.netty.NettyServer;
+import com.mrru.netty.server.NettyServer;
 import com.mrru.registry.DefaultServiceRegistry;
 import com.mrru.registry.ServiceRegistry;
 

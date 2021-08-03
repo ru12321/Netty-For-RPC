@@ -1,6 +1,5 @@
-package com.mrru.netty;
+package com.mrru.netty.client;
 
-import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

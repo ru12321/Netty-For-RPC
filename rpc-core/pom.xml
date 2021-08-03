@@ -16,11 +16,15 @@
             <artifactId>rpc-common</artifactId>
             <version>2.0-SNAPSHOT</version>
         </dependency>
+
+        <!--Netty依赖-->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>${netty-version}</version>
         </dependency>
+
+        <!--json协议-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -37,12 +41,19 @@
             <version>2.11.0</version>
         </dependency>
 
+        <!--kryo协议-->
         <dependency>
             <groupId>com.esotericsoftware</groupId>
             <artifactId>kryo</artifactId>
             <version>4.0.2</version>
         </dependency>
 
+        <!--Hessian协议-->
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>hessian</artifactId>
+            <version>4.0.63</version>
+        </dependency>
     </dependencies>
 
     <properties>

@@ -1,11 +1,11 @@
-package com.mrru.netty;
+package com.mrru.netty.client;
 
 import com.mrru.RpcClient;
 import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
-import com.mrru.serializer.JsonSerializer;
+import com.mrru.serializer.HessianSerializer;
 import com.mrru.serializer.KryoSerializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -50,9 +50,9 @@ public class NettyClient implements RpcClient
                     {
                         ChannelPipeline pipeline = ch.pipeline();
 //                        pipeline.addLast(new CommonEncoder(new JsonSerializer())); //编码器处理器
-                        pipeline.addLast(new CommonEncoder(new KryoSerializer()));
+//                        pipeline.addLast(new CommonEncoder(new KryoSerializer()));
+                        pipeline.addLast(new CommonEncoder(new HessianSerializer()));
                         pipeline.addLast(new CommonDecoder()); //解码器处理器
-
                         ////将服务端返回的消息 放在全局的AttributeKey中
                         pipeline.addLast(new NettyClientHandler()); //数据处理器
 

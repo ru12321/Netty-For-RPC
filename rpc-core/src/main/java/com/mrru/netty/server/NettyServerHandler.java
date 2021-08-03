@@ -1,4 +1,4 @@
-package com.mrru.netty;
+package com.mrru.netty.server;
 
 import com.mrru.RequestHandler;
 import com.mrru.entity.RpcRequest;

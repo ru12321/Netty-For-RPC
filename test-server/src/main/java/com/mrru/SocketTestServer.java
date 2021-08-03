@@ -2,7 +2,7 @@ package com.mrru;
 
 import com.mrru.registry.DefaultServiceRegistry;
 import com.mrru.registry.ServiceRegistry;
-import com.mrru.socket.SocketServer;
+import com.mrru.socket.server.SocketServer;
 
 /**
  * @className: TestServer

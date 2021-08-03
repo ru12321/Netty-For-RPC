@@ -1,6 +1,6 @@
 package com.mrru;
 
-import com.mrru.socket.SocketClient;
+import com.mrru.socket.client.SocketClient;
 
 /**
  * @className: TestClient
