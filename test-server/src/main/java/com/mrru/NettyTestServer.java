@@ -4,6 +4,7 @@ import com.mrru.netty.server.NettyServer;
 import com.mrru.registry.DefaultServiceRegistry;
 import com.mrru.registry.ServiceRegistry;
 import com.mrru.serializer.HessianSerializer;
+import com.mrru.serializer.JsonSerializer;
 
 /**
  * 测试用Netty服务提供者（服务端）
@@ -24,7 +25,7 @@ public class NettyTestServer
 
         //启动服务，并监听端口9999的客户端连接
         NettyServer server = new NettyServer();
-        server.setSerializer(new HessianSerializer());
+        server.setSerializer(new JsonSerializer());
         server.start(9999);
     }
 
