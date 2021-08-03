@@ -2,6 +2,8 @@ package com.mrru;
 
 import com.mrru.registry.DefaultServiceRegistry;
 import com.mrru.registry.ServiceRegistry;
+import com.mrru.serializer.HessianSerializer;
+import com.mrru.serializer.KryoSerializer;
 import com.mrru.socket.server.SocketServer;
 
 /**
@@ -18,14 +20,17 @@ public class SocketTestServer
      */
     public static void main(String[] args)
     {
+        //获取实现类对象
         HelloServiceImpl helloService = new HelloServiceImpl();
 
+        //注册实现类对象 和 接口名称
         ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
         serviceRegistry.register(helloService);
 
-        SocketServer rpcServer = new SocketServer(serviceRegistry);
-
-        rpcServer.start(9000);
+        //初始化服务端，指定序列化器，启动监听
+        SocketServer socketServer = new SocketServer(serviceRegistry);
+        socketServer.setSerializer(new KryoSerializer());
+        socketServer.start(9000);
 
     }
 

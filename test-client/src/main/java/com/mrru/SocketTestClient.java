@@ -1,5 +1,6 @@
 package com.mrru;
 
+import com.mrru.serializer.HessianSerializer;
 import com.mrru.socket.client.SocketClient;
 
 /**
@@ -17,9 +18,10 @@ public class SocketTestClient
      */
     public static void main(String[] args)
     {
-        //生成代理对象
-        SocketClient client = new SocketClient("127.0.0.1", 9000);
-        RpcClientProxy proxy = new RpcClientProxy(client);
+        //生成代理对象，指定序列化器
+        SocketClient socketClient = new SocketClient("127.0.0.1", 9000);
+        socketClient.setSerializer(new HessianSerializer());
+        RpcClientProxy proxy = new RpcClientProxy(socketClient);
         HelloService helloService = proxy.getProxy(HelloService.class);
 
         //要发送的数据

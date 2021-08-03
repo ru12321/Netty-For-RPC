@@ -1,6 +1,7 @@
 package com.mrru;
 
 import com.mrru.netty.client.NettyClient;
+import com.mrru.serializer.HessianSerializer;
 
 /**
  * 测试用Netty消费者
@@ -13,8 +14,9 @@ public class NettyTestClient
 {
     public static void main(String[] args)
     {
-        //初始化客户端，并传入proxy对象中
+        //初始化客户端，手动传入序列化器，并传入proxy对象中
         RpcClient client = new NettyClient("127.0.0.1", 9999);
+        client.setSerializer(new HessianSerializer());
         RpcClientProxy proxy = new RpcClientProxy(client);
 
         //生成代理对象

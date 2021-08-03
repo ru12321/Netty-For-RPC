@@ -5,6 +5,9 @@ import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
+import com.mrru.enums.RpcError;
+import com.mrru.exception.RpcException;
+import com.mrru.serializer.CommonSerializer;
 import com.mrru.serializer.HessianSerializer;
 import com.mrru.serializer.KryoSerializer;
 import io.netty.bootstrap.Bootstrap;
@@ -30,25 +33,15 @@ public class NettyClient implements RpcClient
 
     private static final Bootstrap bootstrap;
 
+    private CommonSerializer serializer;
+
     static {
         EventLoopGroup group = new NioEventLoopGroup();
 
         bootstrap = new Bootstrap();
-        bootstrap.group(group).channel(NioSocketChannel.class).option(ChannelOption.SO_KEEPALIVE, true).handler(new ChannelInitializer<SocketChannel>()
-        {
-            @Override
-            protected void initChannel(SocketChannel ch) throws Exception
-            {
-                ChannelPipeline pipeline = ch.pipeline();
-//                        pipeline.addLast(new CommonEncoder(new JsonSerializer())); //编码器处理器
-//                        pipeline.addLast(new CommonEncoder(new KryoSerializer()));
-                pipeline.addLast(new CommonEncoder(new HessianSerializer()));
-                pipeline.addLast(new CommonDecoder()); //解码器处理器
-                ////将服务端返回的消息 放在全局的AttributeKey中
-                pipeline.addLast(new NettyClientHandler()); //数据处理器
-
-            }
-        });
+        bootstrap.group(group)
+                .channel(NioSocketChannel.class)
+                .option(ChannelOption.SO_KEEPALIVE, true);
     }
 
     private String host;
@@ -63,6 +56,28 @@ public class NettyClient implements RpcClient
     @Override
     public Object sendRequest(RpcRequest rpcRequest)
     {
+        //在发送请求对象时，再判断并传入处理器（序列化器）
+        if (serializer == null){
+            logger.error("未设置序列化器");
+            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
+        }
+
+        bootstrap.handler(new ChannelInitializer<SocketChannel>()
+        {
+            @Override
+            protected void initChannel(SocketChannel ch) throws Exception
+            {
+                ChannelPipeline pipeline = ch.pipeline();
+//              pipeline.addLast(new CommonEncoder(new JsonSerializer()));
+//              pipeline.addLast(new CommonEncoder(new KryoSerializer()));
+//              pipeline.addLast(new CommonEncoder(new HessianSerializer()));
+                pipeline.addLast(new CommonEncoder(serializer));//编码器处理器--多种序列化器选择
+                pipeline.addLast(new CommonDecoder());          //解码器处理器
+                pipeline.addLast(new NettyClientHandler());     //数据处理器，将服务端返回的消息 放在全局的AttributeKey中
+
+            }
+        });
+
         try {
             ChannelFuture channelFuture = bootstrap.connect(host, port).sync();
             logger.info("客户端连接到服务器 {}：{}", host, port);
@@ -86,14 +101,16 @@ public class NettyClient implements RpcClient
              */
             AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse");
             RpcResponse rpcResponse = channel.attr(key).get();
-
             return rpcResponse.getData();
-
-
         } catch (InterruptedException e) {
             logger.error("发送消息时有错误发生: ", e);
         }
-
         return null;
+    }
+
+    @Override
+    public void setSerializer(CommonSerializer serializer)
+    {
+        this.serializer = serializer;
     }
 }

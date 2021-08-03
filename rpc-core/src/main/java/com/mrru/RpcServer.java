@@ -1,5 +1,7 @@
 package com.mrru;
 
+import com.mrru.serializer.CommonSerializer;
+
 /**
  * 服务器类通用接口
  *
@@ -10,4 +12,6 @@ package com.mrru;
 public interface RpcServer
 {
     void start(int port);
+
+    void setSerializer(CommonSerializer serializer);
 }
