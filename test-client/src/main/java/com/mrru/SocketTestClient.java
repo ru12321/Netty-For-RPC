@@ -3,6 +3,8 @@ package com.mrru;
 import com.mrru.socket.client.SocketClient;
 
 /**
+ * 测试用消费者（客户端）
+ *
  * @className: TestClient
  * @author: 茹某
  * @date: 2021/8/1 11:10

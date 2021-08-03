@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Netty中处理RpcRequest的Handler
+ *
  * @className: NettyServerHandler
  * @author: 茹某
  * @date: 2021/8/2 9:34
@@ -33,8 +35,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest>
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcRequest msg) throws Exception
     {
-        try
-        {
+        try {
             logger.info("服务器接收到请求：{}", msg);
             //拿到实现类对象
             String interfaceName = msg.getInterfaceName();
@@ -48,8 +49,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest>
             ChannelFuture channelFuture = ctx.writeAndFlush(RpcResponse.success(result));
             channelFuture.addListener(ChannelFutureListener.CLOSE);
 
-        } finally
-        {
+        } finally {
             //从InBound里读取的ByteBuf要手动释放，还
             // 有自己创建的ByteBuf要自己负责释放。
             ReferenceCountUtil.release(msg);

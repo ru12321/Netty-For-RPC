@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 真正的接口的实现类
+ *
  * @className: HelloServiceImpl
  * @author: 茹某
  * @date: 2021/8/1 9:10
@@ -16,6 +18,6 @@ public class HelloServiceImpl implements HelloService
     public String hello(HelloObject object)
     {
         logger.info("接收到: {}", object.getMessage());
-        return "这是调用的返回值，id = "+object.getId();
+        return "这是调用的返回值，id = " + object.getId();
     }
 }

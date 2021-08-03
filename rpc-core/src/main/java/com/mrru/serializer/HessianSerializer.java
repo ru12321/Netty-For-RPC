@@ -13,6 +13,7 @@ import java.io.IOException;
 
 /**
  * 基于Hessian协议的序列化器
+ *
  * @className: HessianSerializer
  * @author: 茹某
  * @date: 2021/8/3 12:31
@@ -37,25 +38,21 @@ public class HessianSerializer implements CommonSerializer
     {
         HessianOutput hessianOutput = null;
         //创建一个字节数组缓冲区--字节数组输出流
-        try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()){
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             hessianOutput = new HessianOutput(byteArrayOutputStream);
             //对象序列化后，读到这个 字节数组缓冲区 中
             hessianOutput.writeObject(obj);
             //返回序列化后的字节数组
             return byteArrayOutputStream.toByteArray();
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             logger.error("序列化时有错误发生： ", e);
             throw new SerializeException("序列化时有错误发生");
-        }finally
-        {
-            if (hessianOutput != null){
-                try
-                {
+        } finally {
+            if (hessianOutput != null) {
+                try {
                     hessianOutput.close();
-                } catch (IOException e)
-                {
-                    logger.error("关闭序列化流时有错误发生：",e);
+                } catch (IOException e) {
+                    logger.error("关闭序列化流时有错误发生：", e);
                 }
             }
         }
@@ -65,18 +62,15 @@ public class HessianSerializer implements CommonSerializer
     public Object deserialize(byte[] bytes, Class<?> clazz)
     {
         HessianInput hessianInput = null;
-        try(ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes))
-        {
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
             hessianInput = new HessianInput(byteArrayInputStream);
             //将输入流中的 字节数组 反序列化为对象
             return hessianInput.readObject();
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.error("序列化时有错误发生： ", e);
             throw new SerializeException("序列化时有错误发生");
-        } finally
-        {
-            if (hessianInput !=null){
+        } finally {
+            if (hessianInput != null) {
                 hessianInput.close();
             }
         }

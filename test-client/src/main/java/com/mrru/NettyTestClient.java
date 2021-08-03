@@ -3,6 +3,8 @@ package com.mrru;
 import com.mrru.netty.client.NettyClient;
 
 /**
+ * 测试用Netty消费者
+ *
  * @className: NettyTestClient
  * @author: 茹某
  * @date: 2021/8/2 10:05

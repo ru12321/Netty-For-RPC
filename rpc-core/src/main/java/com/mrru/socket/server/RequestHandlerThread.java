@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
+ * 处理RpcRequest的工作线程
  * @className: RequestHandlerThread
  * @author: 茹某
  * @date: 2021/8/1 18:34

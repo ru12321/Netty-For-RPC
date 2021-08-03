@@ -9,6 +9,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
+ * RPC客户端动态代理，生成代理对象并且实现 invoke包装要发送的数据
+ *
  * @className: RpcClientProxy
  * @author: 茹某
  * @date: 2021/8/1 10:04
@@ -19,16 +21,16 @@ public class RpcClientProxy implements InvocationHandler
 
     private final RpcClient client;
 
-    public RpcClientProxy(RpcClient client) {
+    public RpcClientProxy(RpcClient client)
+    {
         this.client = client;
     }
 
     //使用getProxy()方法来生成代理对象。
     @SuppressWarnings("unchecked")
-    public <T> T getProxy(Class<T> clazz){
-        return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
-                                 new Class<?>[] {clazz},
-                                this);
+    public <T> T getProxy(Class<T> clazz)
+    {
+        return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[]{clazz}, this);
     }
 
     //指明代理对象的方法被调用时的动作
@@ -39,8 +41,7 @@ public class RpcClientProxy implements InvocationHandler
     {
         logger.info("调用方法: {}#{}", method.getDeclaringClass().getName(), method.getName());
 
-        RpcRequest rpcRequest = new RpcRequest(method.getDeclaringClass().getName(),
-                method.getName(), args, method.getParameterTypes());
+        RpcRequest rpcRequest = new RpcRequest(method.getDeclaringClass().getName(), method.getName(), args, method.getParameterTypes());
 
         return client.sendRequest(rpcRequest);
     }

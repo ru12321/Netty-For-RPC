@@ -9,6 +9,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
 /**
+ * 通用的编码拦截器
+ *
  * @className: CommonEncoder
  * @author: 茹某
  * @date: 2021/8/1 21:40
@@ -26,7 +28,8 @@ public class CommonEncoder extends MessageToByteEncoder
 
     private final CommonSerializer serializer;
 
-    public CommonEncoder(CommonSerializer serializer){
+    public CommonEncoder(CommonSerializer serializer)
+    {
         this.serializer = serializer;
     }
 
@@ -40,9 +43,9 @@ public class CommonEncoder extends MessageToByteEncoder
         out.writeInt(MAGIC_NUMBER);
 
         //Package Type，标明这是一个调用请求还是调用响应
-        if (msg instanceof RpcRequest){
+        if (msg instanceof RpcRequest) {
             out.writeInt(PackageType.REQUEST_PACK.getCode());//0--请求
-        }else{
+        } else {
             out.writeInt(PackageType.RESPONSE_PACK.getCode());//1--响应
         }
 

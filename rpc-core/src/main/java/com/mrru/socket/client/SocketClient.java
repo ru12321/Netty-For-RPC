@@ -11,6 +11,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
+ * Socket方式远程方法调用的消费者（客户端）
+ *
  * @className: RpcClient
  * @author: 茹某
  * @date: 2021/8/1 10:10
@@ -23,9 +25,10 @@ public class SocketClient implements RpcClient
 
     private final int port;
 
-    public SocketClient(String host,int port){
-        this.host= host;
-        this.port=port;
+    public SocketClient(String host, int port)
+    {
+        this.host = host;
+        this.port = port;
     }
 
     /*
@@ -33,9 +36,9 @@ public class SocketClient implements RpcClient
     通过Socket传输。创建一个Socket，获取ObjectOutputStream对象，
     然后把需要发送的对象传进去即可，接收时获取ObjectInputStream对象，readObject()方法就可以获得一个返回的对象。
      */
-    public Object sendRequest(RpcRequest rpcRequest){
-        try(Socket socket = new Socket(host, port))
-        {
+    public Object sendRequest(RpcRequest rpcRequest)
+    {
+        try (Socket socket = new Socket(host, port)) {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             objectOutputStream.writeObject(rpcRequest);
@@ -43,14 +46,11 @@ public class SocketClient implements RpcClient
 
             return objectInputStream.readObject();
 
-        } catch (IOException | ClassNotFoundException e)
-        {
-            logger.error("调用时有错误发生",e);
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("调用时有错误发生", e);
             return null;
         }
     }
-
-
 
 
 }

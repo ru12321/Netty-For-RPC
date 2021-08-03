@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * RPC调用过程中的错误
  * @className: RpcError
  * @author: 茹某
  * @date: 2021/8/1 18:53

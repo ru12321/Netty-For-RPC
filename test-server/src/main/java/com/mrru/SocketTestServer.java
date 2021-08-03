@@ -5,6 +5,8 @@ import com.mrru.registry.ServiceRegistry;
 import com.mrru.socket.server.SocketServer;
 
 /**
+ * 测试用服务提供方（服务端）
+ *
  * @className: TestServer
  * @author: 茹某
  * @date: 2021/8/1 11:10

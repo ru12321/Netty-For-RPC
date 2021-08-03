@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
+ * 通用的解码拦截器 在Netty的pipeline中添加
+ *
  * @className: CommonDecoder
  * @author: 茹某
  * @date: 2021/8/2 9:10
@@ -29,27 +31,27 @@ public class CommonDecoder extends ReplayingDecoder
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception
     {
         int magic = in.readInt();
-        if (magic != MAGIC_NUMBER){
+        if (magic != MAGIC_NUMBER) {
             logger.error("不识别的协议包： {}", magic);
             throw new RpcException(RpcError.UNKNOWN_PROTOCOL);
         }
 
         int packageCode = in.readInt();
         Class<?> packageClass;
-        if (packageCode == PackageType.REQUEST_PACK.getCode()){
+        if (packageCode == PackageType.REQUEST_PACK.getCode()) {
             packageClass = RpcRequest.class;
-        }else if(packageCode == PackageType.RESPONSE_PACK.getCode()){
+        } else if (packageCode == PackageType.RESPONSE_PACK.getCode()) {
             packageClass = RpcResponse.class;
-        }else{
-            logger.error("不识别的数据包: {}",packageCode);
+        } else {
+            logger.error("不识别的数据包: {}", packageCode);
             throw new RpcException(RpcError.UNKNOWN_PACKAGE_TYPE);
         }
 
         //取出序列化器的编号，以获得正确的反序列化方式！！！
         int serializerCode = in.readInt();//目前值为1
         CommonSerializer serializer = CommonSerializer.getByCode(serializerCode);//如果是1，创建新的serializer，不然返回null
-        if (serializer == null){
-            logger.error("不识别的反序列化器：{}",serializerCode);
+        if (serializer == null) {
+            logger.error("不识别的反序列化器：{}", serializerCode);
             throw new RpcException(RpcError.UNKNOWN_SERIALIZER);
         }
 

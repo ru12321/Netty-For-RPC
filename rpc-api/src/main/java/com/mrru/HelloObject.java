@@ -7,10 +7,11 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
+ * 测试用api的实体
+ *
  * @className: com.mrru.HelloObject
  * @author: 茹某
  * @date: 2021/8/1 9:02
- * 测试用api的实体
  **/
 @Data
 @AllArgsConstructor

@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * NIO方式消费侧客户端类
+ *
  * @className: NettyClient
  * @author: 茹某
  * @date: 2021/8/1 20:52
@@ -26,9 +28,31 @@ public class NettyClient implements RpcClient
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
+    private static final Bootstrap bootstrap;
+
+    static {
+        EventLoopGroup group = new NioEventLoopGroup();
+
+        bootstrap = new Bootstrap();
+        bootstrap.group(group).channel(NioSocketChannel.class).option(ChannelOption.SO_KEEPALIVE, true).handler(new ChannelInitializer<SocketChannel>()
+        {
+            @Override
+            protected void initChannel(SocketChannel ch) throws Exception
+            {
+                ChannelPipeline pipeline = ch.pipeline();
+//                        pipeline.addLast(new CommonEncoder(new JsonSerializer())); //编码器处理器
+//                        pipeline.addLast(new CommonEncoder(new KryoSerializer()));
+                pipeline.addLast(new CommonEncoder(new HessianSerializer()));
+                pipeline.addLast(new CommonDecoder()); //解码器处理器
+                ////将服务端返回的消息 放在全局的AttributeKey中
+                pipeline.addLast(new NettyClientHandler()); //数据处理器
+
+            }
+        });
+    }
+
     private String host;
     private int port;
-    private static final Bootstrap bootstrap;
 
     public NettyClient(String host, int port)
     {
@@ -36,46 +60,21 @@ public class NettyClient implements RpcClient
         this.port = port;
     }
 
-    static{
-        EventLoopGroup group = new NioEventLoopGroup();
-
-        bootstrap = new Bootstrap();
-        bootstrap.group(group)
-                .channel(NioSocketChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE,true)
-                .handler(new ChannelInitializer<SocketChannel>()
-                {
-                    @Override
-                    protected void initChannel(SocketChannel ch) throws Exception
-                    {
-                        ChannelPipeline pipeline = ch.pipeline();
-//                        pipeline.addLast(new CommonEncoder(new JsonSerializer())); //编码器处理器
-//                        pipeline.addLast(new CommonEncoder(new KryoSerializer()));
-                        pipeline.addLast(new CommonEncoder(new HessianSerializer()));
-                        pipeline.addLast(new CommonDecoder()); //解码器处理器
-                        ////将服务端返回的消息 放在全局的AttributeKey中
-                        pipeline.addLast(new NettyClientHandler()); //数据处理器
-
-                    }
-                });
-    }
-
     @Override
     public Object sendRequest(RpcRequest rpcRequest)
     {
-        try
-        {
+        try {
             ChannelFuture channelFuture = bootstrap.connect(host, port).sync();
             logger.info("客户端连接到服务器 {}：{}", host, port);
 
             Channel channel = channelFuture.channel();
-            if (channel!=null){
+            if (channel != null) {
                 channel.writeAndFlush(rpcRequest).addListener(future -> {
-                   if (future.isSuccess()){
-                       logger.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
-                   }else{
-                       logger.error("发送消息时有错误发生： "+future.cause());
-                   }
+                    if (future.isSuccess()) {
+                        logger.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
+                    } else {
+                        logger.error("发送消息时有错误发生： " + future.cause());
+                    }
                 });
             }
             channel.closeFuture().sync();
@@ -91,8 +90,7 @@ public class NettyClient implements RpcClient
             return rpcResponse.getData();
 
 
-        } catch (InterruptedException e)
-        {
+        } catch (InterruptedException e) {
             logger.error("发送消息时有错误发生: ", e);
         }
 

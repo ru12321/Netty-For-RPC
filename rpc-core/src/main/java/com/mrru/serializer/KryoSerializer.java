@@ -15,6 +15,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
+ * Kryo序列化器
+ *
  * @className: KryoSerializer
  * @author: 茹某
  * @date: 2021/8/2 15:25
@@ -24,7 +26,7 @@ public class KryoSerializer implements CommonSerializer
 
     private static final Logger logger = LoggerFactory.getLogger(KryoSerializer.class);
 
-    private static final ThreadLocal<Kryo> kryoThreadLocal = ThreadLocal.withInitial(()->{
+    private static final ThreadLocal<Kryo> kryoThreadLocal = ThreadLocal.withInitial(() -> {
         Kryo kryo = new Kryo();
         kryo.register(RpcRequest.class);
         kryo.register(RpcResponse.class);
@@ -37,8 +39,7 @@ public class KryoSerializer implements CommonSerializer
     @Override
     public byte[] serialize(Object obj)
     {
-        try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            Output output = new Output(byteArrayOutputStream)){
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(); Output output = new Output(byteArrayOutputStream)) {
             //一个线程一个 Kryo
             Kryo kryo = kryoThreadLocal.get();
 
@@ -47,10 +48,9 @@ public class KryoSerializer implements CommonSerializer
             kryoThreadLocal.remove();
 
             //获得对象的字节数组
-            return  output.toBytes();
+            return output.toBytes();
 
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             logger.error("序列化时有错误发生：", e);
             throw new SerializeException("序列化时有错误发生");
         }
@@ -59,8 +59,7 @@ public class KryoSerializer implements CommonSerializer
     @Override
     public Object deserialize(byte[] bytes, Class<?> clazz)
     {
-        try(ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
-            Input input =new Input(byteArrayInputStream)){
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes); Input input = new Input(byteArrayInputStream)) {
 
             Kryo kryo = kryoThreadLocal.get();
             //从 Input 对象中直接 readObject
@@ -69,14 +68,12 @@ public class KryoSerializer implements CommonSerializer
             kryoThreadLocal.remove();
             return object;
 
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             logger.error("反序列化时有错误发生：", e);
             throw new SerializeException("反序列化时有错误发生");
         }
 
     }
-
 
     @Override
     public int getCode()
