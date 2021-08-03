@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 
 
 /**
- * 服务端进行过程调用的处理器，动态代理真正的反射invoke调用 在RequestHandlerThread中被调用
+ * 服务端 进行过程调用的处理器，动态代理真正的反射invoke调用 在RequestHandlerThread中被调用
  *
  * @className: RequestHandler
  * @author: 茹某
@@ -42,7 +42,7 @@ public class RequestHandler
             method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
 
         } catch (NoSuchMethodException e) {
-            return RpcResponse.fail(ResponseCode.METHOD_NOT_FOUND);
+            return RpcResponse.fail(ResponseCode.METHOD_NOT_FOUND, rpcRequest.getRequestId());
         }
         //通过反射执行实现类对象的 参数为包装的rpcRequest对象中带得参数  的 method方法
         return method.invoke(service, rpcRequest.getParameters());

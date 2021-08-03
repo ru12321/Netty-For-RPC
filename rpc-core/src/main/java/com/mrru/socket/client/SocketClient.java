@@ -9,6 +9,7 @@ import com.mrru.exception.RpcException;
 import com.mrru.serializer.CommonSerializer;
 import com.mrru.socket.util.ObjectReader;
 import com.mrru.socket.util.ObjectWriter;
+import com.mrru.util.RpcMessageChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,10 @@ public class SocketClient implements RpcClient
                 logger.error("调用服务失败, service: {}, response:{}", rpcRequest.getInterfaceName(), rpcResponse);
                 throw new RpcException(RpcError.SERVICE_INVOCATION_FAILURE, " service:" + rpcRequest.getInterfaceName());
             }
+
+            //校验请求号
+            RpcMessageChecker.check(rpcRequest, rpcResponse);
+
             return rpcResponse.getData();
 
         } catch (IOException  e) {

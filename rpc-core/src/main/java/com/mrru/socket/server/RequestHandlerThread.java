@@ -50,8 +50,8 @@ public class RequestHandlerThread implements Runnable
             Object service = serviceRegistry.getService(interfaceName);//通过接口名称 从注册中心 获取到 实现类对象
             Object result = requestHandler.handle(rpcRequest, service); //通过实现类对象service 调用包装对象中的具体方法-----handle是真正的代理实现服务端的方法，并返回 方法的返回值
 
-            //将方法返回值封装为响应对象 并将响应对象 写到输出流
-            RpcResponse<Object> response = RpcResponse.success(result);
+            //将方法返回值封装为响应对象 并将响应对象 写到输出流(带上请求响应号)
+            RpcResponse<Object> response = RpcResponse.success(result, rpcRequest.getRequestId());
             ObjectWriter.writeObject(outputStream, response, serializer);
 
         } catch (IOException  e)

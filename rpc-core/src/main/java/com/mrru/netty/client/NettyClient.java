@@ -10,6 +10,7 @@ import com.mrru.exception.RpcException;
 import com.mrru.serializer.CommonSerializer;
 import com.mrru.serializer.HessianSerializer;
 import com.mrru.serializer.KryoSerializer;
+import com.mrru.util.RpcMessageChecker;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -99,8 +100,12 @@ public class NettyClient implements RpcClient
             通过这种方式获得全局可见的返回结果，在获得返回结果 RpcResponse 后，
             将这个对象以 key 为 rpcResponse 放入 ChannelHandlerContext 中，这里就可以立刻获得结果并返回
              */
-            AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse");
+            AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse"+rpcRequest.getRequestId());
             RpcResponse rpcResponse = channel.attr(key).get();
+
+            //校验请求序列号是否有变化，顺便校验响应状态码
+            RpcMessageChecker.check(rpcRequest, rpcResponse);
+
             return rpcResponse.getData();
         } catch (InterruptedException e) {
             logger.error("发送消息时有错误发生: ", e);

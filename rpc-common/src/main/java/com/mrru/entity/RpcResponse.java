@@ -26,6 +26,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class RpcResponse<T> implements Serializable
 {
+    //响应对应的请求号
+    private String requestId;
+
     //响应状态码
     private Integer statusCode;
 
@@ -37,7 +40,7 @@ public class RpcResponse<T> implements Serializable
 
     //<T> 表示这是一个泛型方法 在修饰符和返回值之间
     //如果静态方法要使用泛型的话，必须将静态方法也定义成泛型方法 。
-    public static <T> RpcResponse<T> success(T data)
+    public static <T> RpcResponse<T> success(T data, String requestId)
     {
         RpcResponse<T> response = new RpcResponse<>();
         response.setStatusCode(ResponseCode.SUCCESS.getCode());
@@ -46,7 +49,7 @@ public class RpcResponse<T> implements Serializable
     }
 
 
-    public static <T> RpcResponse<T> fail(ResponseCode code)
+    public static <T> RpcResponse<T> fail(ResponseCode code, String requestId)
     {
         RpcResponse<T> response = new RpcResponse<>();
         response.setStatusCode(code.getCode());
