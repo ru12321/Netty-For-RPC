@@ -3,11 +3,11 @@ package com.mrru.transport.socket.server;
 import com.mrru.RpcServer;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
-import com.mrru.registry.NacosServiceRegistry;
-import com.mrru.registry.ServiceProvider;
+import com.mrru.registry.nacos.NacosServiceRegistry;
+import com.mrru.registry.local.ServiceProvider;
 import com.mrru.RequestHandler;
-import com.mrru.registry.ServiceProviderImpl;
-import com.mrru.registry.ServiceRegistry;
+import com.mrru.registry.local.ServiceProviderImpl;
+import com.mrru.registry.nacos.ServiceRegistry;
 import com.mrru.serializer.CommonSerializer;
 import com.mrru.util.ThreadPoolFactory;
 import org.slf4j.Logger;
@@ -51,16 +51,18 @@ public class SocketServer implements RpcServer
     }
 
     @Override
-    public <T> void publishService(Object service, Class<T> serviceClass)
+    public <T> void publishService(T service, Class<T> serviceClass)
     {
         if (serializer == null) {
             logger.error("未设置序列化器");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
         //本地注册
-        serviceProvider.addServiceProvider(service);
+        serviceProvider.addServiceProvider(service, serviceClass);
         //nacos注册
         serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
+
+        start();
     }
 
     //注册实现类 并立即开始监听

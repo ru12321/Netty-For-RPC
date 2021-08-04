@@ -3,8 +3,6 @@ package com.mrru.transport.netty.server;
 import com.mrru.RequestHandler;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
-import com.mrru.registry.ServiceProviderImpl;
-import com.mrru.registry.ServiceProvider;
 import com.mrru.util.ThreadPoolFactory;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;

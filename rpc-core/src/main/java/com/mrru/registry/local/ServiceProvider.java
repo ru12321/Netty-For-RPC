@@ -1,4 +1,4 @@
-package com.mrru.registry;
+package com.mrru.registry.local;
 
 /**
  * 在本地保存和提供服务实例对象
@@ -15,7 +15,7 @@ public interface ServiceProvider
      * @param service 待注册的服务实体
      * @param <T>     服务实体类
      */
-    <T> void addServiceProvider(T service);
+    <T> void addServiceProvider(T service, Class<T> serviceClass);
 
     /**
      * 根据服务名称获取服务实体

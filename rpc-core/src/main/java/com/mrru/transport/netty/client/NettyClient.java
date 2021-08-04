@@ -5,8 +5,8 @@ import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
-import com.mrru.registry.NacosServiceRegistry;
-import com.mrru.registry.ServiceRegistry;
+import com.mrru.registry.nacos.NacosServiceDiscovery;
+import com.mrru.registry.nacos.ServiceDiscovery;
 import com.mrru.serializer.CommonSerializer;
 import com.mrru.util.RpcMessageChecker;
 import io.netty.bootstrap.Bootstrap;
@@ -34,7 +34,7 @@ public class NettyClient implements RpcClient
 
     private static final Bootstrap bootstrap;
 
-    private final ServiceRegistry serviceRegistry;
+    private final ServiceDiscovery serviceDiscovery;
 
     private CommonSerializer serializer;
 
@@ -49,7 +49,7 @@ public class NettyClient implements RpcClient
 
     //nacos服务对象
     public NettyClient(){
-        this.serviceRegistry = new NacosServiceRegistry();
+        this.serviceDiscovery = new NacosServiceDiscovery();
     }
 
     @Override
@@ -67,8 +67,8 @@ public class NettyClient implements RpcClient
         AtomicReference<Object> result = new AtomicReference<>(null);
 
         try {
-            //通过注册中心获得服务器地址
-            InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+            //从nacos发现类 获得服务地址
+            InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
             //初始化客户端，并且连接服务器，通过同步工具类countDownLatch，设置了重新连接等待机制
             Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
 
@@ -93,6 +93,7 @@ public class NettyClient implements RpcClient
                 //set() 可以原子性的设置当前的值
                 result.set(rpcResponse.getData());
             }else {
+                channel.close();
                 System.exit(0);
             }
         } catch (InterruptedException e) {

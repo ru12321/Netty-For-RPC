@@ -6,8 +6,8 @@ import com.mrru.entity.RpcResponse;
 import com.mrru.enums.ResponseCode;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
-import com.mrru.registry.NacosServiceRegistry;
-import com.mrru.registry.ServiceRegistry;
+import com.mrru.registry.nacos.NacosServiceDiscovery;
+import com.mrru.registry.nacos.ServiceDiscovery;
 import com.mrru.serializer.CommonSerializer;
 import com.mrru.transport.socket.util.ObjectReader;
 import com.mrru.transport.socket.util.ObjectWriter;
@@ -30,13 +30,13 @@ public class SocketClient implements RpcClient
 {
     private static final Logger logger = LoggerFactory.getLogger(SocketClient.class);
 
-    private  final ServiceRegistry serviceRegistry;
+    private  final ServiceDiscovery serviceDiscovery;
 
     private CommonSerializer serializer;
 
     public SocketClient()
     {
-        this.serviceRegistry = new NacosServiceRegistry();
+        this.serviceDiscovery = new NacosServiceDiscovery();
     }
 
     /*
@@ -51,8 +51,8 @@ public class SocketClient implements RpcClient
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
 
-        //从nacos注册中心 获得服务地址
-        InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+        //从nacos发现类 获得服务地址
+        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
 
         try (Socket socket = new Socket()) {
             //传入服务地址，连接服务端

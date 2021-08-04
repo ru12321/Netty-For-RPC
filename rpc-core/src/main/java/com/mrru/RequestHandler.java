@@ -3,8 +3,8 @@ package com.mrru;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import com.mrru.enums.ResponseCode;
-import com.mrru.registry.ServiceProvider;
-import com.mrru.registry.ServiceProviderImpl;
+import com.mrru.registry.local.ServiceProvider;
+import com.mrru.registry.local.ServiceProviderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

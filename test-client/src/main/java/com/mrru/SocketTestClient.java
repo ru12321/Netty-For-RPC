@@ -1,6 +1,7 @@
 package com.mrru;
 
 import com.mrru.serializer.HessianSerializer;
+import com.mrru.serializer.JsonSerializer;
 import com.mrru.transport.socket.client.SocketClient;
 
 /**
@@ -20,7 +21,7 @@ public class SocketTestClient
     {
         //生成代理对象，指定序列化器
         SocketClient socketClient = new SocketClient();
-        socketClient.setSerializer(new HessianSerializer());
+        socketClient.setSerializer(new JsonSerializer());
         RpcClientProxy proxy = new RpcClientProxy(socketClient);
         HelloService helloService = proxy.getProxy(HelloService.class);
 

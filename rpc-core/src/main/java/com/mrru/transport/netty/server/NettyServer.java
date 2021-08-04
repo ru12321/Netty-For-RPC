@@ -5,10 +5,10 @@ import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
-import com.mrru.registry.NacosServiceRegistry;
-import com.mrru.registry.ServiceProvider;
-import com.mrru.registry.ServiceProviderImpl;
-import com.mrru.registry.ServiceRegistry;
+import com.mrru.registry.nacos.NacosServiceRegistry;
+import com.mrru.registry.local.ServiceProvider;
+import com.mrru.registry.local.ServiceProviderImpl;
+import com.mrru.registry.nacos.ServiceRegistry;
 import com.mrru.serializer.CommonSerializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -41,7 +41,8 @@ public class NettyServer implements RpcServer
 
     private CommonSerializer serializer;
 
-    public NettyServer(String host, int port){
+    public NettyServer(String host, int port)
+    {
         this.host = host;
         this.port = port;
         serviceRegistry = new NacosServiceRegistry();
@@ -50,15 +51,15 @@ public class NettyServer implements RpcServer
 
     //向 Nacos 注册服务
     @Override
-    public <T> void publishService(Object service, Class<T> serviceClass)
+    public <T> void publishService(T service, Class<T> serviceClass)
     {
-        if (serializer == null){
+        if (serializer == null) {
             logger.error("未设置序列化器");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
 
         //本地注册
-        serviceProvider.addServiceProvider(service);
+        serviceProvider.addServiceProvider(service, serviceClass);
         //nacos注册
         serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
 
@@ -79,13 +80,9 @@ public class NettyServer implements RpcServer
 
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
-            serverBootstrap.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .option(ChannelOption.SO_BACKLOG, 256)
+            serverBootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).handler(new LoggingHandler(LogLevel.INFO)).option(ChannelOption.SO_BACKLOG, 256)
 //                    .option(ChannelOption.SO_KEEPALIVE, true) 没有意义
-                    .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childHandler(new ChannelInitializer<SocketChannel>()
+                    .childOption(ChannelOption.TCP_NODELAY, true).childHandler(new ChannelInitializer<SocketChannel>()
             {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception

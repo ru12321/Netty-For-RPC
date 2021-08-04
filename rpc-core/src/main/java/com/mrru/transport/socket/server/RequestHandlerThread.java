@@ -2,7 +2,7 @@ package com.mrru.transport.socket.server;
 
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
-import com.mrru.registry.ServiceProvider;
+import com.mrru.registry.local.ServiceProvider;
 import com.mrru.RequestHandler;
 import com.mrru.serializer.CommonSerializer;
 import com.mrru.transport.socket.util.ObjectReader;
