@@ -23,6 +23,8 @@ public interface CommonSerializer
     Integer HESSIAN_SERIALIZER = 2;
     Integer PROTOBUF_SERIALIZER = 3;
 
+    Integer DEFAULT_SERIALIZER = KRYO_SERIALIZER;
+
     //已经根据编号获取 对应的序列化器（反序列化用到）
     static CommonSerializer getByCode(int code)
     {

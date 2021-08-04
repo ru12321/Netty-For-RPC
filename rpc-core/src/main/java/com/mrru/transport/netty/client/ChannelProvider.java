@@ -10,6 +10,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 用于获取 Channel 对象
+ * 用于 NettyClient 获取 Channel 对象
  *
  * @className: ChannelProvider
  * @author: 茹某
@@ -58,6 +59,9 @@ public class ChannelProvider
             protected void initChannel(SocketChannel ch) throws Exception
             {
                 ChannelPipeline pipeline = ch.pipeline();
+                //Netty心跳机制 读超时时间、写超时时间、读写超时时间。
+                //客户端会每隔writerIdleTime时间去检查一次 通道写 方法被调用的情况，如果5秒内channel没有触发写，那就调用userEventTriggered方法
+                pipeline.addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
                 pipeline.addLast(new CommonEncoder(serializer));
                 pipeline.addLast(new CommonDecoder());
                 pipeline.addLast(new NettyClientHandler());

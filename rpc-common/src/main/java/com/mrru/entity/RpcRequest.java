@@ -41,5 +41,11 @@ public class RpcRequest implements Serializable
     //调用方法的参数类型
     private Class<?>[] paramTypes;
 
-
+    /**
+     * 是否是心跳包
+     * 所谓的“心跳”就是定时发送一个自定义的结构体（心跳包或心跳帧），
+     * 让对方知道自己“在线”，以确保链接的有效性。
+     * 心跳检测规定定时发送心跳检测数据包，接收方接心跳包后回复，否则认为连接断开。
+     */
+    private Boolean heartBeat;
 }

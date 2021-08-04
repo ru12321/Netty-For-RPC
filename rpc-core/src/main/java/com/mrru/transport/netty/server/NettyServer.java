@@ -18,10 +18,12 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 /**
  * NIO方式服务提供侧
@@ -94,9 +96,10 @@ public class NettyServer implements RpcServer
                 protected void initChannel(SocketChannel ch) throws Exception
                 {
                     ChannelPipeline pipeline = ch.pipeline();
-//                  pipeline.addLast(new CommonEncoder(new JsonSerializer()));
-//                  pipeline.addLast(new CommonEncoder(new KryoSerializer()));
-//                  pipeline.addLast(new CommonEncoder(new HessianSerializer()));
+                    //Netty心跳机制 读超时时间、写超时时间、读写超时时间。
+                    //当设置了readerIdleTime以后，服务端server会每隔readerIdleTime时间去检查一次channelRead方法被调用的情况，
+                    // 如果在readerIdleTime时间内该channel上的channelRead()方法没有被触发，就会调用处理器的userEventTriggered方法。
+                    pipeline.addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
                     pipeline.addLast(new CommonEncoder(serializer));    //编码器处理器--多种序列化器选择
                     pipeline.addLast(new CommonDecoder());              //解码器处理器
                     pipeline.addLast(new NettyServerHandler());         //数据处理器
