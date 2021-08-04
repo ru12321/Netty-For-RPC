@@ -19,20 +19,18 @@ import java.net.Socket;
  * @author: 茹某
  * @date: 2021/8/1 18:34
  **/
-public class RequestHandlerThread implements Runnable
+public class SocketRequestHandlerThread implements Runnable
 {
-    private static final Logger logger = LoggerFactory.getLogger(RequestHandlerThread.class);
+    private static final Logger logger = LoggerFactory.getLogger(SocketRequestHandlerThread.class);
 
     private Socket socket;
     private RequestHandler requestHandler;
-    private ServiceProvider serviceProvider;
     private CommonSerializer serializer;
 
-    public RequestHandlerThread(Socket socket, RequestHandler requestHandler, ServiceProvider serviceProvider, CommonSerializer serializer)
+    public SocketRequestHandlerThread(Socket socket, RequestHandler requestHandler, CommonSerializer serializer)
     {
         this.socket = socket;
         this.requestHandler = requestHandler;
-        this.serviceProvider = serviceProvider;
         this.serializer = serializer;
     }
 

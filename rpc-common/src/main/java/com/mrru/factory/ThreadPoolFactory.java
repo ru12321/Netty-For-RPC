@@ -1,4 +1,4 @@
-package com.mrru.util;
+package com.mrru.factory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 

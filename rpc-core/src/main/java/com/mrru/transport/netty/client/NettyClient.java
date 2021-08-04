@@ -33,13 +33,14 @@ public class NettyClient implements RpcClient
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
     private static final Bootstrap bootstrap;
+    private static final EventLoopGroup group;
 
     private final ServiceDiscovery serviceDiscovery;
 
     private CommonSerializer serializer;
 
     static {
-        EventLoopGroup group = new NioEventLoopGroup();
+        group = new NioEventLoopGroup();
 
         bootstrap = new Bootstrap();
         bootstrap.group(group)
@@ -72,32 +73,36 @@ public class NettyClient implements RpcClient
             //初始化客户端，并且连接服务器，通过同步工具类countDownLatch，设置了重新连接等待机制
             Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
 
-            if (channel.isActive()) {
-                channel.writeAndFlush(rpcRequest).addListener(future -> {
-                    if (future.isSuccess()) {
-                        logger.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
-                    } else {
-                        logger.error("发送消息时有错误发生： " + future.cause());
-                    }
-                });
-                channel.closeFuture().sync();
-                //通过 AttributeKey 的方式阻塞获得返回结果
-            /*
-            通过这种方式获得全局可见的返回结果，在获得返回结果 RpcResponse 后，
-            将这个对象以 key 为 rpcResponse 放入 ChannelHandlerContext 中，这里就可以立刻获得结果并返回
-             */
-                AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse"+rpcRequest.getRequestId());
-                RpcResponse rpcResponse = channel.attr(key).get();
-                //校验请求序列号是否有变化，顺便校验响应状态码
-                RpcMessageChecker.check(rpcRequest, rpcResponse);
-                //set() 可以原子性的设置当前的值
-                result.set(rpcResponse.getData());
-            }else {
-                channel.close();
-                System.exit(0);
+            if (!channel.isActive()) {
+                group.shutdownGracefully();
+                return null;
             }
+            channel.writeAndFlush(rpcRequest).addListener(future1 -> {
+                if (future1.isSuccess()) {
+                    logger.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
+                } else {
+                    logger.error("发送消息时有错误发生: ", future1.cause());
+                }
+            });
+            channel.closeFuture().sync();
+
+            /*
+                通过 AttributeKey 的方式阻塞获得返回结果
+                通过这种方式获得全局可见的返回结果，在获得返回结果 RpcResponse 后，
+                将这个对象以 key 为 rpcResponse 放入 ChannelHandlerContext 中，这里就可以立刻获得结果并返回
+             */
+            AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse" + rpcRequest.getRequestId());
+            RpcResponse rpcResponse = channel.attr(key).get();
+
+            //校验请求序列号是否有变化，顺便校验响应状态码
+            RpcMessageChecker.check(rpcRequest, rpcResponse);
+
+            //set() 可以原子性的设置 AtomicReference 中的数据
+            result.set(rpcResponse.getData());
+
         } catch (InterruptedException e) {
             logger.error("发送消息时有错误发生: ", e);
+            Thread.currentThread().interrupt();
         }
         //get() 可以原子性的读取 AtomicReference 中的数据
         return result.get();

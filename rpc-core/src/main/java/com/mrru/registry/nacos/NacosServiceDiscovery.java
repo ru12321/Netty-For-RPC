@@ -21,19 +21,12 @@ public class NacosServiceDiscovery implements ServiceDiscovery
 {
     private static final Logger logger = LoggerFactory.getLogger(NacosServiceDiscovery.class);
 
-    private final NamingService namingService;
-
-    public NacosServiceDiscovery()
-    {
-        namingService = NacosUtil.getNacosNamingService();
-    }
-
     @Override
     public InetSocketAddress lookupService(String serviceName)
     {
         try {
             //NacosUtil工具类 去获得instance
-            List<Instance> instances = NacosUtil.getAllInstance(namingService, serviceName);
+            List<Instance> instances = NacosUtil.getAllInstance(serviceName);
             Instance instance = instances.get(0);
             return new InetSocketAddress(instance.getIp(), instance.getPort());
         } catch (NacosException e) {

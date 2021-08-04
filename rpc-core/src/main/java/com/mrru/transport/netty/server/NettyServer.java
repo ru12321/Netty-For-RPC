@@ -5,6 +5,7 @@ import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
+import com.mrru.hook.ShutdownHook;
 import com.mrru.registry.nacos.NacosServiceRegistry;
 import com.mrru.registry.local.ServiceProvider;
 import com.mrru.registry.local.ServiceProviderImpl;
@@ -57,20 +58,17 @@ public class NettyServer implements RpcServer
             logger.error("未设置序列化器");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
-
         //本地注册
         serviceProvider.addServiceProvider(service, serviceClass);
         //nacos注册
         serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-
         /*
-        注册完一个服务后直接调用 start() 方法，这是个不太好的实现……
-        导致一个服务端只能注册一个服务，之后可以多注册几个然后再手动调用 start() 方法。
+            注册完一个服务后直接调用 start() 方法，这是个不太好的实现……
+            导致一个服务端只能注册一个服务，之后可以多注册几个然后再手动调用 start() 方法。
          */
         start();
 
     }
-
 
     @Override
     public void start()
@@ -97,6 +95,8 @@ public class NettyServer implements RpcServer
                 }
             });
             ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
+            //清空之前 所有的nacos注册服务
+            ShutdownHook.getShutdownHook().addClearAllHook();
             channelFuture.channel().closeFuture().sync();
 
         } catch (Exception e) {

@@ -31,32 +31,26 @@ public class RequestHandler
 
     public Object handle(RpcRequest rpcRequest)
     {
-        Object result = null;
         //从本地注册中 获得 实现类对象
         Object service = serviceProvider.getServiceProvider(rpcRequest.getInterfaceName());
-
-        try {
-            result = invokeTargetMethod(rpcRequest, service);
-            logger.info("服务：{} 成功调用方法：{}", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
-
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("调用或发送时有错误发生： ", e);
-        }
-        return result;
+        //调用实现类的方法，并获得返回结果
+        return invokeTargetMethod(rpcRequest, service);
     }
 
-    private Object invokeTargetMethod(RpcRequest rpcRequest, Object service) throws InvocationTargetException, IllegalAccessException
+    private Object invokeTargetMethod(RpcRequest rpcRequest, Object service)
     {
-        Method method;
+        Object result;
         try {
             //根据包装的rpcRequest对象 获得到 实现类的 要调用的方法
-            method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
+            Method method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
+            result = method.invoke(service, rpcRequest.getParameters());
+            logger.info("服务:{} 成功调用方法:{}", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
 
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             return RpcResponse.fail(ResponseCode.METHOD_NOT_FOUND, rpcRequest.getRequestId());
         }
         //通过反射执行实现类对象的 参数为包装的rpcRequest对象中带得参数  的 method方法
-        return method.invoke(service, rpcRequest.getParameters());
+        return result;
     }
 
 

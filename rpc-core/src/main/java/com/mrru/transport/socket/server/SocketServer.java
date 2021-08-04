@@ -9,7 +9,7 @@ import com.mrru.RequestHandler;
 import com.mrru.registry.local.ServiceProviderImpl;
 import com.mrru.registry.nacos.ServiceRegistry;
 import com.mrru.serializer.CommonSerializer;
-import com.mrru.util.ThreadPoolFactory;
+import com.mrru.factory.ThreadPoolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +74,7 @@ public class SocketServer implements RpcServer
             Socket socket;//拿到连接的socket
             while ((socket = serverSocket.accept()) != null) {
                 logger.info("消费者连接： {} ：{} ", socket.getInetAddress(), socket.getPort());
-                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceProvider, serializer));
+                threadPool.execute(new SocketRequestHandlerThread(socket, requestHandler,serializer));
             }
             threadPool.shutdown();
         } catch (IOException e) {

@@ -18,6 +18,6 @@ public class HelloServiceImpl2 implements HelloService
     public String hello(HelloObject object)
     {
         logger.info("接收到消息: {}", object.getMessage());
-        return "本次处理通过Netty，这是调用的返回值,id = " + object.getId();
+        return "本次处理通过Socket，这是调用的返回值,id = " + object.getId();
     }
 }
