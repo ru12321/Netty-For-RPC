@@ -51,7 +51,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest>
 
                 //返回消息给客户端
                 ChannelFuture channelFuture = ctx.writeAndFlush(RpcResponse.success(result, msg.getRequestId()));
-                channelFuture.addListener(ChannelFutureListener.CLOSE);
+                channelFuture.addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
             } finally {
                 //从InBound里读取的ByteBuf要手动释放，还
                 // 有自己创建的ByteBuf要自己负责释放。

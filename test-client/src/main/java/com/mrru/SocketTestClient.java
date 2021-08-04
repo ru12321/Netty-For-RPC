@@ -1,5 +1,6 @@
 package com.mrru;
 
+import com.mrru.serializer.CommonSerializer;
 import com.mrru.serializer.HessianSerializer;
 import com.mrru.serializer.JsonSerializer;
 import com.mrru.transport.socket.client.SocketClient;
@@ -19,10 +20,8 @@ public class SocketTestClient
      */
     public static void main(String[] args)
     {
-        //生成代理对象，指定序列化器
-        SocketClient socketClient = new SocketClient();
-        socketClient.setSerializer(new JsonSerializer());
-        RpcClientProxy proxy = new RpcClientProxy(socketClient);
+        //生成代理对象，手动传入序列化器(默认去RpcClient查看)
+        RpcClientProxy proxy = new RpcClientProxy(new SocketClient(CommonSerializer.KRYO_SERIALIZER));
         HelloService helloService = proxy.getProxy(HelloService.class);
 
         //要发送的数据

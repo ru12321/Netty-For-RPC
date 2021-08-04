@@ -11,9 +11,9 @@ import com.mrru.serializer.CommonSerializer;
  **/
 public interface RpcServer
 {
-    void start();
+    int DEFAULT_SERIALIZER = CommonSerializer.KRYO_SERIALIZER;
 
-    void setSerializer(CommonSerializer serializer);
+    void start();
 
     //向 Nacos 注册服务
     <T> void publishService(T service, Class<T> serviceClass);

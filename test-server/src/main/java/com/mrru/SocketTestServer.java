@@ -1,5 +1,6 @@
 package com.mrru;
 
+import com.mrru.serializer.CommonSerializer;
 import com.mrru.serializer.KryoSerializer;
 import com.mrru.transport.socket.server.SocketServer;
 
@@ -20,9 +21,8 @@ public class SocketTestServer
         //获取实现类对象
         HelloService helloService = new HelloServiceImpl2();
 
-        //初始化服务端，指定序列化器，启动监听
-        SocketServer socketServer = new SocketServer("127.0.0.1", 9999);
-        socketServer.setSerializer(new KryoSerializer());
+        //初始化服务端，启动监听, 手动传入序列化器(默认去RpcServer查看)
+        SocketServer socketServer = new SocketServer("127.0.0.1", 9999, CommonSerializer.HESSIAN_SERIALIZER);
 
         //注册实现类对象 和 接口名称
         socketServer.publishService(helloService, HelloService.class);

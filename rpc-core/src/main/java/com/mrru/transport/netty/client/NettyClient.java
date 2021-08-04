@@ -37,7 +37,7 @@ public class NettyClient implements RpcClient
 
     private final ServiceDiscovery serviceDiscovery;
 
-    private CommonSerializer serializer;
+    private final CommonSerializer serializer;
 
     static {
         group = new NioEventLoopGroup();
@@ -48,9 +48,14 @@ public class NettyClient implements RpcClient
                 .option(ChannelOption.SO_KEEPALIVE, true);
     }
 
-    //nacos服务对象
     public NettyClient(){
+        this(DEFAULT_SERIALIZER);
+    }
+
+    //nacos服务对象
+    public NettyClient(Integer serializerCode){
         this.serviceDiscovery = new NacosServiceDiscovery();
+        this.serializer = CommonSerializer.getByCode(serializerCode);
     }
 
     @Override
@@ -108,9 +113,4 @@ public class NettyClient implements RpcClient
         return result.get();
     }
 
-    @Override
-    public void setSerializer(CommonSerializer serializer)
-    {
-        this.serializer = serializer;
-    }
 }

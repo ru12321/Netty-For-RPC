@@ -40,12 +40,17 @@ public class NettyServer implements RpcServer
     private final ServiceRegistry serviceRegistry;
     private final ServiceProvider serviceProvider;
 
-    private CommonSerializer serializer;
+    private final CommonSerializer serializer;
 
-    public NettyServer(String host, int port)
+    public NettyServer(String host, int port){
+        this(host, port, DEFAULT_SERIALIZER);
+    }
+
+    public NettyServer(String host, int port, Integer serializerCode)
     {
         this.host = host;
         this.port = port;
+        this.serializer = CommonSerializer.getByCode(serializerCode);
         serviceRegistry = new NacosServiceRegistry();
         serviceProvider = new ServiceProviderImpl();
     }
@@ -73,6 +78,9 @@ public class NettyServer implements RpcServer
     @Override
     public void start()
     {
+        //启动之前，注销所有nacos实例，关闭线程池
+        ShutdownHook.getShutdownHook().addClearAllHook();
+
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -95,8 +103,6 @@ public class NettyServer implements RpcServer
                 }
             });
             ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
-            //清空之前 所有的nacos注册服务
-            ShutdownHook.getShutdownHook().addClearAllHook();
             channelFuture.channel().closeFuture().sync();
 
         } catch (Exception e) {
@@ -106,12 +112,5 @@ public class NettyServer implements RpcServer
             workerGroup.shutdownGracefully();
         }
     }
-
-    @Override
-    public void setSerializer(CommonSerializer serializer)
-    {
-        this.serializer = serializer;
-    }
-
 
 }
