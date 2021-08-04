@@ -1,10 +1,9 @@
 package com.mrru;
 
-import com.mrru.registry.DefaultServiceRegistry;
-import com.mrru.registry.ServiceRegistry;
-import com.mrru.serializer.HessianSerializer;
+import com.mrru.registry.ServiceProviderImpl;
+import com.mrru.registry.ServiceProvider;
 import com.mrru.serializer.KryoSerializer;
-import com.mrru.socket.server.SocketServer;
+import com.mrru.transport.socket.server.SocketServer;
 
 /**
  * 测试用服务提供方（服务端）
@@ -23,14 +22,12 @@ public class SocketTestServer
         //获取实现类对象
         HelloServiceImpl helloService = new HelloServiceImpl();
 
-        //注册实现类对象 和 接口名称
-        ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
-        serviceRegistry.register(helloService);
-
         //初始化服务端，指定序列化器，启动监听
-        SocketServer socketServer = new SocketServer(serviceRegistry);
+        SocketServer socketServer = new SocketServer("127.0.0.1", 8485);
         socketServer.setSerializer(new KryoSerializer());
-        socketServer.start(9000);
+
+        //注册实现类对象 和 接口名称
+        socketServer.publishService(helloService, HelloService.class);
 
     }
 

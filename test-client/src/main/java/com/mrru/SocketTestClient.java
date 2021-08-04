@@ -1,7 +1,7 @@
 package com.mrru;
 
 import com.mrru.serializer.HessianSerializer;
-import com.mrru.socket.client.SocketClient;
+import com.mrru.transport.socket.client.SocketClient;
 
 /**
  * 测试用消费者（客户端）
@@ -19,7 +19,7 @@ public class SocketTestClient
     public static void main(String[] args)
     {
         //生成代理对象，指定序列化器
-        SocketClient socketClient = new SocketClient("127.0.0.1", 9000);
+        SocketClient socketClient = new SocketClient();
         socketClient.setSerializer(new HessianSerializer());
         RpcClientProxy proxy = new RpcClientProxy(socketClient);
         HelloService helloService = proxy.getProxy(HelloService.class);

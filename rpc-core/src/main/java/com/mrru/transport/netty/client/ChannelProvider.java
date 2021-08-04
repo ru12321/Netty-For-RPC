@@ -1,4 +1,4 @@
-package com.mrru.netty.client;
+package com.mrru.transport.netty.client;
 
 import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;

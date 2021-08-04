@@ -11,7 +11,7 @@
 
 仅仅意味着客户端和服务端**编码**时所采用的序列化器，对于**解码**，会根据传输协议传过来的序列化器的Code，创建对应的反序列化器进行解码！
 ## 增加了Netty客户端连接失败重试机制
-![img.png](img.png)
+![img.png](imgs/img.png)
 
 ## Protostuff
 Protostuff是基于谷歌Protocol Buffer的Java序列化库。
@@ -19,3 +19,42 @@ Protostuff是基于谷歌Protocol Buffer的Java序列化库。
 Protocol Buffer门槛更高，因为需要编写.proto文件，再把它编译成目标语言，这样使用起来就很麻烦。
 
 但是现在有了protostuff之后，就不需要依赖.proto文件了，他可以直接对POJO进行序列化和反序列化，使用起来非常简单。
+
+## nacos配置
+修改启动为单机版，配置conf：设置好对应的mysql环境
+![nacos配置.png](imgs/img_4.png)
+![nacos配置.png](imgs/img_5.png)
+去mysql执行sql文件语句，建库db_nacos和图一对应即可。
+
+## nacos注册中心测试结果
+测试前提前开启nacos
+
+NettyTestServer
+
+![NettyTestServer.png](imgs/img_1.png)
+
+---
+Nacos网页端：http://localhost:8848/nacos/#/serviceManagement?dataId=&group=&appName=&namespace=
+![Nacos.png](imgs/img_3.png)
+![Nacos.png](imgs/img_6.png)
+![Nacos.png](imgs/img_7.png)
+---
+
+NettyTestClient
+
+![NettyTestClient.png](imgs/img_2.png)
+
+关闭NettyTestServer服务后
+![img.png](imgs/img8.png)
+
+
+
+
+
+
+
+
+
+
+
+

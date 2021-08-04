@@ -1,4 +1,4 @@
-package com.mrru.socket.client;
+package com.mrru.transport.socket.client;
 
 import com.mrru.RpcClient;
 import com.mrru.entity.RpcRequest;
@@ -6,14 +6,17 @@ import com.mrru.entity.RpcResponse;
 import com.mrru.enums.ResponseCode;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
+import com.mrru.registry.NacosServiceRegistry;
+import com.mrru.registry.ServiceRegistry;
 import com.mrru.serializer.CommonSerializer;
-import com.mrru.socket.util.ObjectReader;
-import com.mrru.socket.util.ObjectWriter;
+import com.mrru.transport.socket.util.ObjectReader;
+import com.mrru.transport.socket.util.ObjectWriter;
 import com.mrru.util.RpcMessageChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -27,15 +30,13 @@ public class SocketClient implements RpcClient
 {
     private static final Logger logger = LoggerFactory.getLogger(SocketClient.class);
 
-    private final String host;
-    private final int port;
+    private  final ServiceRegistry serviceRegistry;
 
     private CommonSerializer serializer;
 
-    public SocketClient(String host, int port)
+    public SocketClient()
     {
-        this.host = host;
-        this.port = port;
+        this.serviceRegistry = new NacosServiceRegistry();
     }
 
     /*
@@ -49,7 +50,13 @@ public class SocketClient implements RpcClient
             logger.error("未设置序列化器");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
-        try (Socket socket = new Socket(host, port)) {
+
+        //从nacos注册中心 获得服务地址
+        InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+
+        try (Socket socket = new Socket()) {
+            //传入服务地址，连接服务端
+            socket.connect(inetSocketAddress);
             OutputStream outputStream = socket.getOutputStream();
             InputStream inputStream = socket.getInputStream();
 

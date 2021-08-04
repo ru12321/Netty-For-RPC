@@ -1,4 +1,4 @@
-package com.mrru.socket.util;
+package com.mrru.transport.socket.util;
 
 import com.mrru.entity.RpcRequest;
 import com.mrru.enums.PackageType;

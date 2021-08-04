@@ -3,6 +3,8 @@ package com.mrru;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import com.mrru.enums.ResponseCode;
+import com.mrru.registry.ServiceProvider;
+import com.mrru.registry.ServiceProviderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +23,18 @@ public class RequestHandler
 {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
-    public Object handle(RpcRequest rpcRequest, Object service)
+    private static final ServiceProvider serviceProvider;
+
+    static{
+        serviceProvider = new ServiceProviderImpl();
+    }
+
+    public Object handle(RpcRequest rpcRequest)
     {
         Object result = null;
+        //从本地注册中 获得 实现类对象
+        Object service = serviceProvider.getServiceProvider(rpcRequest.getInterfaceName());
+
         try {
             result = invokeTargetMethod(rpcRequest, service);
             logger.info("服务：{} 成功调用方法：{}", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());

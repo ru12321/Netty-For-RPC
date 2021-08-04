@@ -1,9 +1,8 @@
 package com.mrru;
 
-import com.mrru.netty.server.NettyServer;
-import com.mrru.registry.DefaultServiceRegistry;
-import com.mrru.registry.ServiceRegistry;
-import com.mrru.serializer.HessianSerializer;
+import com.mrru.transport.netty.server.NettyServer;
+import com.mrru.registry.ServiceProviderImpl;
+import com.mrru.registry.ServiceProvider;
 import com.mrru.serializer.JsonSerializer;
 
 /**
@@ -19,14 +18,13 @@ public class NettyTestServer
     {
         //创建实现类对象
         HelloServiceImpl helloService = new HelloServiceImpl();
-        //注册实现类对象，即对应 接口名称<-->实现类对象
-        ServiceRegistry registry = new DefaultServiceRegistry();
-        registry.register(helloService);
 
         //启动服务，并监听端口9999的客户端连接
-        NettyServer server = new NettyServer();
-        server.setSerializer(new JsonSerializer());
-        server.start(9999);
+        NettyServer nettyServer = new NettyServer("127.0.0.1", 8484);
+        nettyServer.setSerializer(new JsonSerializer());
+
+        //传入服务端的地址，注册实现类对象，即对应 接口名称<-->实现类对象
+        nettyServer.publishService(helloService,HelloService.class);
     }
 
 }

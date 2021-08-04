@@ -1,13 +1,15 @@
-package com.mrru.netty.server;
+package com.mrru.transport.netty.server;
 
 import com.mrru.RpcServer;
 import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
+import com.mrru.registry.NacosServiceRegistry;
+import com.mrru.registry.ServiceProvider;
+import com.mrru.registry.ServiceProviderImpl;
+import com.mrru.registry.ServiceRegistry;
 import com.mrru.serializer.CommonSerializer;
-import com.mrru.serializer.HessianSerializer;
-import com.mrru.serializer.KryoSerializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -17,6 +19,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
 
 /**
  * NIO方式服务提供侧
@@ -29,16 +33,47 @@ public class NettyServer implements RpcServer
 {
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
+    private final String host;
+    private final int port;
+
+    private final ServiceRegistry serviceRegistry;
+    private final ServiceProvider serviceProvider;
+
     private CommonSerializer serializer;
 
+    public NettyServer(String host, int port){
+        this.host = host;
+        this.port = port;
+        serviceRegistry = new NacosServiceRegistry();
+        serviceProvider = new ServiceProviderImpl();
+    }
+
+    //向 Nacos 注册服务
     @Override
-    public void start(int port)
+    public <T> void publishService(Object service, Class<T> serviceClass)
     {
         if (serializer == null){
             logger.error("未设置序列化器");
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
 
+        //本地注册
+        serviceProvider.addServiceProvider(service);
+        //nacos注册
+        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
+
+        /*
+        注册完一个服务后直接调用 start() 方法，这是个不太好的实现……
+        导致一个服务端只能注册一个服务，之后可以多注册几个然后再手动调用 start() 方法。
+         */
+        start();
+
+    }
+
+
+    @Override
+    public void start()
+    {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -48,7 +83,7 @@ public class NettyServer implements RpcServer
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .option(ChannelOption.SO_BACKLOG, 256)
-                    .option(ChannelOption.SO_KEEPALIVE, true)
+//                    .option(ChannelOption.SO_KEEPALIVE, true) 没有意义
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(new ChannelInitializer<SocketChannel>()
             {
@@ -64,7 +99,7 @@ public class NettyServer implements RpcServer
                     pipeline.addLast(new NettyServerHandler());         //数据处理器
                 }
             });
-            ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
             channelFuture.channel().closeFuture().sync();
 
         } catch (Exception e) {
@@ -80,5 +115,6 @@ public class NettyServer implements RpcServer
     {
         this.serializer = serializer;
     }
+
 
 }

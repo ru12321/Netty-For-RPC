@@ -1,20 +1,17 @@
-package com.mrru.netty.client;
+package com.mrru.transport.netty.client;
 
 import com.mrru.RpcClient;
-import com.mrru.codec.CommonDecoder;
-import com.mrru.codec.CommonEncoder;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
+import com.mrru.registry.NacosServiceRegistry;
+import com.mrru.registry.ServiceRegistry;
 import com.mrru.serializer.CommonSerializer;
-import com.mrru.serializer.HessianSerializer;
-import com.mrru.serializer.KryoSerializer;
 import com.mrru.util.RpcMessageChecker;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
@@ -37,6 +34,8 @@ public class NettyClient implements RpcClient
 
     private static final Bootstrap bootstrap;
 
+    private final ServiceRegistry serviceRegistry;
+
     private CommonSerializer serializer;
 
     static {
@@ -48,13 +47,9 @@ public class NettyClient implements RpcClient
                 .option(ChannelOption.SO_KEEPALIVE, true);
     }
 
-    private String host;
-    private int port;
-
-    public NettyClient(String host, int port)
-    {
-        this.host = host;
-        this.port = port;
+    //nacos服务对象
+    public NettyClient(){
+        this.serviceRegistry = new NacosServiceRegistry();
     }
 
     @Override
@@ -72,8 +67,10 @@ public class NettyClient implements RpcClient
         AtomicReference<Object> result = new AtomicReference<>(null);
 
         try {
+            //通过注册中心获得服务器地址
+            InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
             //初始化客户端，并且连接服务器，通过同步工具类countDownLatch，设置了重新连接等待机制
-            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
+            Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
 
             if (channel.isActive()) {
                 channel.writeAndFlush(rpcRequest).addListener(future -> {

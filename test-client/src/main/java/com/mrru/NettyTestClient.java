@@ -1,7 +1,6 @@
 package com.mrru;
 
-import com.mrru.netty.client.NettyClient;
-import com.mrru.serializer.HessianSerializer;
+import com.mrru.transport.netty.client.NettyClient;
 import com.mrru.serializer.ProtoBufSerializer;
 
 /**
@@ -13,10 +12,12 @@ import com.mrru.serializer.ProtoBufSerializer;
  **/
 public class NettyTestClient
 {
+
     public static void main(String[] args)
     {
         //初始化客户端，手动传入序列化器，并传入proxy对象中
-        RpcClient client = new NettyClient("127.0.0.1", 9999);
+        //客户端不需要指定 服务端地址
+        RpcClient client = new NettyClient();
         client.setSerializer(new ProtoBufSerializer());
         RpcClientProxy proxy = new RpcClientProxy(client);
 

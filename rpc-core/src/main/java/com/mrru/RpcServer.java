@@ -11,7 +11,10 @@ import com.mrru.serializer.CommonSerializer;
  **/
 public interface RpcServer
 {
-    void start(int port);
+    void start();
 
     void setSerializer(CommonSerializer serializer);
+
+    //向 Nacos 注册服务
+    <T> void publishService(Object service, Class<T> serviceClass);
 }

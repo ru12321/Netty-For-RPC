@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 //DefaultServiceRegistry类型对象，
 // 通过serviceMap保存 接口类名称<-->其实现类对象，通过后面getService调用得到接口名称对应的实现类对象
 
-public class DefaultServiceRegistry implements ServiceRegistry
+public class ServiceProviderImpl implements ServiceProvider
 {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultServiceRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServiceProviderImpl.class);
 
     //保存的是key-value ，接口名称-实现类对象
     private final static Map<String, Object> serviceMap = new ConcurrentHashMap<>();
@@ -32,7 +32,7 @@ public class DefaultServiceRegistry implements ServiceRegistry
 
     //注册服务信息  注册实现类, 比如参数service = HelloServiceImpl类型的helloService对象
     @Override
-    public synchronized <T> void register(T service)
+    public <T> void addServiceProvider(T service)
     {
         String serviceName = service.getClass().getCanonicalName();//获取该类的规范名称
 
@@ -59,7 +59,7 @@ public class DefaultServiceRegistry implements ServiceRegistry
 
     //获取服务信息  通过接口名称 得到其保存的实现类，一个接口只能对应一个实现类对象
     @Override
-    public Object getService(String serviceName)
+    public Object getServiceProvider(String serviceName)
     {
         Object service = serviceMap.get(serviceName);
 
