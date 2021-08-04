@@ -20,6 +20,9 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * NIO方式消费侧客户端类
  *
@@ -63,28 +66,16 @@ public class NettyClient implements RpcClient
             throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
         }
 
-        bootstrap.handler(new ChannelInitializer<SocketChannel>()
-        {
-            @Override
-            protected void initChannel(SocketChannel ch) throws Exception
-            {
-                ChannelPipeline pipeline = ch.pipeline();
-//              pipeline.addLast(new CommonEncoder(new JsonSerializer()));
-//              pipeline.addLast(new CommonEncoder(new KryoSerializer()));
-//              pipeline.addLast(new CommonEncoder(new HessianSerializer()));
-                pipeline.addLast(new CommonEncoder(serializer));//编码器处理器--多种序列化器选择
-                pipeline.addLast(new CommonDecoder());          //解码器处理器
-                pipeline.addLast(new NettyClientHandler());     //数据处理器，将服务端返回的消息 放在全局的AttributeKey中
-
-            }
-        });
+        /*
+        而AtomicReference则对应普通的对象引用。也就是它可以保证你在修改对象引用时的线程安全性。
+         */
+        AtomicReference<Object> result = new AtomicReference<>(null);
 
         try {
-            ChannelFuture channelFuture = bootstrap.connect(host, port).sync();
-            logger.info("客户端连接到服务器 {}：{}", host, port);
+            //初始化客户端，并且连接服务器，通过同步工具类countDownLatch，设置了重新连接等待机制
+            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
 
-            Channel channel = channelFuture.channel();
-            if (channel != null) {
+            if (channel.isActive()) {
                 channel.writeAndFlush(rpcRequest).addListener(future -> {
                     if (future.isSuccess()) {
                         logger.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
@@ -92,25 +83,26 @@ public class NettyClient implements RpcClient
                         logger.error("发送消息时有错误发生： " + future.cause());
                     }
                 });
-            }
-            channel.closeFuture().sync();
-
-            //通过 AttributeKey 的方式阻塞获得返回结果
+                channel.closeFuture().sync();
+                //通过 AttributeKey 的方式阻塞获得返回结果
             /*
             通过这种方式获得全局可见的返回结果，在获得返回结果 RpcResponse 后，
             将这个对象以 key 为 rpcResponse 放入 ChannelHandlerContext 中，这里就可以立刻获得结果并返回
              */
-            AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse"+rpcRequest.getRequestId());
-            RpcResponse rpcResponse = channel.attr(key).get();
-
-            //校验请求序列号是否有变化，顺便校验响应状态码
-            RpcMessageChecker.check(rpcRequest, rpcResponse);
-
-            return rpcResponse.getData();
+                AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse"+rpcRequest.getRequestId());
+                RpcResponse rpcResponse = channel.attr(key).get();
+                //校验请求序列号是否有变化，顺便校验响应状态码
+                RpcMessageChecker.check(rpcRequest, rpcResponse);
+                //set() 可以原子性的设置当前的值
+                result.set(rpcResponse.getData());
+            }else {
+                System.exit(0);
+            }
         } catch (InterruptedException e) {
             logger.error("发送消息时有错误发生: ", e);
         }
-        return null;
+        //get() 可以原子性的读取 AtomicReference 中的数据
+        return result.get();
     }
 
     @Override
