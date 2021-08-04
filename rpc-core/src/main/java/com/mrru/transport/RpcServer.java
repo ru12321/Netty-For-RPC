@@ -1,4 +1,4 @@
-package com.mrru;
+package com.mrru.transport;
 
 import com.mrru.serializer.CommonSerializer;
 

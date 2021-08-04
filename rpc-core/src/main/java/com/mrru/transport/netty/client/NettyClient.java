@@ -1,14 +1,16 @@
 package com.mrru.transport.netty.client;
 
-import com.mrru.RpcClient;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
 import com.mrru.factory.SingletonFactory;
+import com.mrru.loadbalancer.LoadBalancer;
+import com.mrru.loadbalancer.RandomLoadBalancer;
 import com.mrru.registry.nacos.NacosServiceDiscovery;
 import com.mrru.registry.nacos.ServiceDiscovery;
 import com.mrru.serializer.CommonSerializer;
+import com.mrru.transport.RpcClient;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -50,13 +52,20 @@ public class NettyClient implements RpcClient
                 .channel(NioSocketChannel.class);
     }
 
-    public NettyClient(){
-        this(DEFAULT_SERIALIZER);
+    public NettyClient(LoadBalancer loadBalancer) {
+        this(DEFAULT_SERIALIZER, loadBalancer);
     }
 
+    public NettyClient(){
+        this(DEFAULT_SERIALIZER, new RandomLoadBalancer());
+    }
+
+    public NettyClient(Integer serializerCode) {
+        this(serializerCode, new RandomLoadBalancer());
+    }
     //nacos服务对象
-    public NettyClient(Integer serializerCode){
-        this.serviceDiscovery = new NacosServiceDiscovery();
+    public NettyClient(Integer serializerCode, LoadBalancer loadBalancer) {
+        this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
         this.serializer = CommonSerializer.getByCode(serializerCode);
         this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
     }

@@ -1,8 +1,8 @@
 package com.mrru;
 
 import com.mrru.serializer.CommonSerializer;
+import com.mrru.transport.RpcClientProxy;
 import com.mrru.transport.netty.client.NettyClient;
-import com.mrru.serializer.ProtoBufSerializer;
 
 /**
  * 测试用Netty消费者

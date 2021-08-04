@@ -1,21 +1,25 @@
 package com.mrru.transport.socket.client;
 
-import com.mrru.RpcClient;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import com.mrru.enums.ResponseCode;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
+import com.mrru.loadbalancer.LoadBalancer;
+import com.mrru.loadbalancer.RandomLoadBalancer;
 import com.mrru.registry.nacos.NacosServiceDiscovery;
 import com.mrru.registry.nacos.ServiceDiscovery;
 import com.mrru.serializer.CommonSerializer;
+import com.mrru.transport.RpcClient;
 import com.mrru.transport.socket.util.ObjectReader;
 import com.mrru.transport.socket.util.ObjectWriter;
 import com.mrru.util.RpcMessageChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -36,12 +40,19 @@ public class SocketClient implements RpcClient
 
     public SocketClient()
     {
-        this(DEFAULT_SERIALIZER);
+        this(DEFAULT_SERIALIZER, new RandomLoadBalancer());
     }
-    public SocketClient(Integer serializerCode)
-    {
-        this.serviceDiscovery = new NacosServiceDiscovery();
-        this.serializer = CommonSerializer.getByCode(serializerCode);
+
+    public SocketClient(LoadBalancer loadBalancer) {
+        this(DEFAULT_SERIALIZER, loadBalancer);
+    }
+
+    public SocketClient(Integer serializer) {
+        this(serializer, new RandomLoadBalancer());
+    }
+    public SocketClient(Integer serializer, LoadBalancer loadBalancer) {
+        this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
+        this.serializer = CommonSerializer.getByCode(serializer);
     }
 
     /*

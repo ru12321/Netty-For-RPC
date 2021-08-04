@@ -1,9 +1,10 @@
-package com.mrru;
+package com.mrru.transport;
 
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import com.mrru.transport.netty.client.NettyClient;
 import com.mrru.transport.socket.client.SocketClient;
+import com.mrru.util.RpcMessageChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,12 +56,12 @@ public class RpcClientProxy implements InvocationHandler
                                                 , method.getParameterTypes()
                                                 , false);
 
-        Object result = null;
+        RpcResponse rpcResponse = null;
         if (client instanceof NettyClient) {
             //当异步任务完成或者发生异常时，自动调用回调对象的回调方法。
             CompletableFuture<RpcResponse> completableFuture = (CompletableFuture<RpcResponse>) client.sendRequest(rpcRequest);
             try {
-                result = completableFuture.get().getData();
+                rpcResponse = completableFuture.get();
 
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("方法调用请求发送失败", e);
@@ -68,9 +69,9 @@ public class RpcClientProxy implements InvocationHandler
             }
         }
         if (client instanceof SocketClient) {
-            RpcResponse rpcResponse = (RpcResponse) client.sendRequest(rpcRequest);
-            result = rpcResponse.getData();
+            rpcResponse = (RpcResponse) client.sendRequest(rpcRequest);
         }
-        return result;
+        RpcMessageChecker.check(rpcRequest, rpcResponse);
+        return rpcResponse.getData();
     }
 }

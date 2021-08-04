@@ -57,6 +57,7 @@ public class NacosUtil
     }
 
 
+    //nacos 也是有保活机制的，一小段时间联系不上服务器就会自动注销
     //注销所有nacos实例
     public static void clearRegistry() {
         //服务地址不为空，并且Set里有服务名称
