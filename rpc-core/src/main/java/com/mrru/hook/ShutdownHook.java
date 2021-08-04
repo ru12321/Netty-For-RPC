@@ -5,8 +5,6 @@ import com.mrru.util.NacosUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutorService;
-
 /**
  * 注销所有nacos实例的钩子函数
  *

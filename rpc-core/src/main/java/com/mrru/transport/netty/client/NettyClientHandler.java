@@ -2,6 +2,7 @@ package com.mrru.transport.netty.client;
 
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
+import com.mrru.factory.SingletonFactory;
 import com.mrru.serializer.CommonSerializer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -9,7 +10,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +27,11 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
 {
     private static final Logger logger = LoggerFactory.getLogger(NettyClientHandler.class);
 
+    private final UnprocessedRequests unprocessedRequests;
+
+    public NettyClientHandler() {
+        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+    }
 
     //读处理器：将服务端返回的消息 放在全局的AttributeKey中
     @Override
@@ -34,14 +39,10 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
     {
         try {
             logger.info(String.format("客户端接收到消息：%s", msg));
-
-            AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse"+ msg.getRequestId());
-            ctx.channel().attr(key).set(msg);
-            ctx.channel().close();
+            unprocessedRequests.complete(msg);
         } finally {
             ReferenceCountUtil.release(msg);
         }
-
     }
 
     //异常处理器

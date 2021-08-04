@@ -2,8 +2,6 @@ package com.mrru.transport.netty.client;
 
 import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
-import com.mrru.enums.RpcError;
-import com.mrru.exception.RpcException;
 import com.mrru.serializer.CommonSerializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -15,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.Date;
-import java.util.concurrent.CountDownLatch;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,8 +34,7 @@ public class ChannelProvider
 
     private static Bootstrap bootstrap = initializeBootstrap();
 
-    private static final int MAX_RETRY_COUNT = 5;
-    private static Channel channel  = null;
+    private static Map<String, Channel> channels = new ConcurrentHashMap<>();
 
 
     private static Bootstrap initializeBootstrap(){
@@ -52,76 +51,55 @@ public class ChannelProvider
         return bootstrap;
     }
 
-    public static Channel get(InetSocketAddress inetSocketAddress, CommonSerializer serializer){
-        bootstrap.handler(new ChannelInitializer<SocketChannel>()
-        {
+    //返回channel对象
+    public static Channel get(InetSocketAddress inetSocketAddress, CommonSerializer serializer) throws InterruptedException {
+        String key = inetSocketAddress.toString() + serializer.getCode();
+        if (channels.containsKey(key)) {
+            Channel channel = channels.get(key);
+            if(channels != null && channel.isActive()) {
+                return channel;
+            } else {
+                channels.remove(key);
+            }
+        }
+
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
-            protected void initChannel(SocketChannel ch) throws Exception
-            {
-                ChannelPipeline pipeline = ch.pipeline();
-                //Netty心跳机制 读超时时间、写超时时间、读写超时时间。
-                //客户端会每隔writerIdleTime时间去检查一次 通道写 方法被调用的情况，如果5秒内channel没有触发写，那就调用userEventTriggered方法
-                pipeline.addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
-                pipeline.addLast(new CommonEncoder(serializer));
-                pipeline.addLast(new CommonDecoder());
-                pipeline.addLast(new NettyClientHandler());
+            protected void initChannel(SocketChannel ch) {
+                /*自定义序列化编解码器*/
+                // RpcResponse -> ByteBuf
+                ch.pipeline().addLast(new CommonEncoder(serializer))
+                        //Netty心跳机制 读超时时间、写超时时间、读写超时时间。
+                        //客户端会每隔writerIdleTime时间去检查一次 通道写 方法被调用的情况，如果5秒内channel没有触发写，那就调用userEventTriggered方法
+                        .addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS))
+                        .addLast(new CommonDecoder())
+                        .addLast(new NettyClientHandler());
             }
         });
 
-        /*
-        countDownLatch是一个同步工具类，用来协调多个线程之间的同步，或者说起到线程之间的通信
-        countDownLatch是一个计数器，线程完成一个记录一个，计数器递减，只能用一次
-         */
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-
+        Channel channel = null;
         try {
-            connect(bootstrap, inetSocketAddress, countDownLatch);
-
-            //调用await()方法的线程会被挂起，它会等待直到count值为0才继续执行，
-            //也就是 就一直等待connect连接完成
-            countDownLatch.await();
-
-        } catch (InterruptedException e) {
-            logger.error("获取channel时有错误发生:", e);
+            channel = connect(bootstrap, inetSocketAddress);
+        } catch (ExecutionException e) {
+            logger.error("连接客户端时有错误发生", e);
+            return null;
         }
+        channels.put(key, channel);
         return channel;
     }
 
-    private static void connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress, CountDownLatch countDownLatch) {
-        connect(bootstrap, inetSocketAddress, MAX_RETRY_COUNT, countDownLatch);
-    }
-
-    private static void connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress, int retry, CountDownLatch countDownLatch) {
+    //连接服务端 添加监听器
+    private static Channel connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress) throws ExecutionException, InterruptedException {
+        CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
         bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 logger.info("客户端连接成功!");
-                channel = future.channel();
-
-                //将count值减1
-                countDownLatch.countDown();
-                return;
+                completableFuture.complete(future.channel());
+            } else {
+                throw new IllegalStateException();
             }
-
-            if (retry == 0) {
-                logger.error("客户端连接失败:重试次数已用完，放弃连接！");
-
-                countDownLatch.countDown();
-                throw new RpcException(RpcError.CLIENT_CONNECT_SERVER_FAILURE);
-            }
-            // 第几次重连
-            int order = (MAX_RETRY_COUNT - retry) + 1;
-            // 本次重连的间隔
-            int delay = 1 << order;
-            logger.error("{}: 连接失败，第 {} 次重连……", new Date(), order);
-            //每delay秒后再重新连接一次  指数退避的方式 ：delay取值 2 4 8 16
-            /*
-            定时任务是调用 bootstrap.config().group().schedule(),
-            其中 bootstrap.config()           这个方法返回的是 BootstrapConfig，他是对 Bootstrap 配置参数的抽象，
-            然后 bootstrap.config().group()   返回的就是我们在一开始的时候配置的线程模型 workerGroup，
-            调   workerGroup 的 schedule      方法即可实现定时任务逻辑
-             */
-            bootstrap.config().group().schedule(() -> connect(bootstrap, inetSocketAddress, retry - 1, countDownLatch), delay, TimeUnit
-                    .SECONDS);
         });
+        return completableFuture.get();
     }
+
 }

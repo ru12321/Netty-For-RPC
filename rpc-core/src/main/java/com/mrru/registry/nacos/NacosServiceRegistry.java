@@ -1,5 +1,6 @@
 package com.mrru.registry.nacos;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import com.mrru.enums.RpcError;
 import com.mrru.exception.RpcException;
 import com.mrru.util.NacosUtil;
@@ -7,9 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
 
 /**
  * Nacos注册实现类

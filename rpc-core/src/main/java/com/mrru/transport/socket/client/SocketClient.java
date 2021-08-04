@@ -85,7 +85,7 @@ public class SocketClient implements RpcClient
             //校验请求号
             RpcMessageChecker.check(rpcRequest, rpcResponse);
 
-            return rpcResponse.getData();
+            return rpcResponse;
 
         } catch (IOException  e) {
             logger.error("调用时有错误发生：", e);

@@ -1,7 +1,6 @@
 package com.mrru.registry.nacos;
 
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.mrru.util.NacosUtil;
 import org.slf4j.Logger;

@@ -1,6 +1,9 @@
 package com.mrru;
 
 import com.mrru.entity.RpcRequest;
+import com.mrru.entity.RpcResponse;
+import com.mrru.transport.netty.client.NettyClient;
+import com.mrru.transport.socket.client.SocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,6 +11,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * RPC客户端动态代理，生成代理对象并且实现 invoke包装要发送的数据
@@ -37,6 +42,7 @@ public class RpcClientProxy implements InvocationHandler
     //指明代理对象的方法被调用时的动作
     //显然就需要生成一个RpcRequest对象，发送出去，然后返回从服务端接收到的结果即可：
     //args 是 要传递的 HelloObject 对象
+    @SuppressWarnings("unchecked")
     @Override
     public Object invoke(Object proxy, Method method, Object[] args)
     {
@@ -49,6 +55,22 @@ public class RpcClientProxy implements InvocationHandler
                                                 , method.getParameterTypes()
                                                 , false);
 
-        return client.sendRequest(rpcRequest);
+        Object result = null;
+        if (client instanceof NettyClient) {
+            //当异步任务完成或者发生异常时，自动调用回调对象的回调方法。
+            CompletableFuture<RpcResponse> completableFuture = (CompletableFuture<RpcResponse>) client.sendRequest(rpcRequest);
+            try {
+                result = completableFuture.get().getData();
+
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("方法调用请求发送失败", e);
+                return null;
+            }
+        }
+        if (client instanceof SocketClient) {
+            RpcResponse rpcResponse = (RpcResponse) client.sendRequest(rpcRequest);
+            result = rpcResponse.getData();
+        }
+        return result;
     }
 }

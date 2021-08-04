@@ -4,8 +4,6 @@ import com.mrru.RequestHandler;
 import com.mrru.entity.RpcRequest;
 import com.mrru.entity.RpcResponse;
 import com.mrru.factory.SingletonFactory;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
@@ -47,8 +45,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest>
             //获得 实现类方法的返回结果
             Object result = requestHandler.handle(msg);
             //返回消息给客户端
-            ChannelFuture future = ctx.writeAndFlush(RpcResponse.success(result, msg.getRequestId()));
-            future.addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+            if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                ctx.writeAndFlush(RpcResponse.success(result, msg.getRequestId()));
+            } else {
+                logger.error("通道不可写");
+            }
         } finally {
             //从InBound里读取的ByteBuf要手动释放，还有自己创建的ByteBuf要自己负责释放
             ReferenceCountUtil.release(msg);
