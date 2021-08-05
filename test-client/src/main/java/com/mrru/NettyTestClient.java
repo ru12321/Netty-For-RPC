@@ -1,6 +1,8 @@
 package com.mrru;
 
+import com.mrru.loadbalancer.RandomLoadBalancer;
 import com.mrru.serializer.CommonSerializer;
+import com.mrru.transport.RpcClient;
 import com.mrru.transport.RpcClientProxy;
 import com.mrru.transport.netty.client.NettyClient;
 
@@ -18,7 +20,8 @@ public class NettyTestClient
     {
         //初始化客户端，手动传入序列化器(默认去RpcClient查看)，并传入proxy对象中
         //客户端不需要指定 服务端地址
-        RpcClientProxy proxy = new RpcClientProxy(new NettyClient(CommonSerializer.PROTOBUF_SERIALIZER));
+        RpcClient  client = new NettyClient(CommonSerializer.PROTOBUF_SERIALIZER, new RandomLoadBalancer());
+        RpcClientProxy proxy = new RpcClientProxy(client);
 
         //生成代理对象
         HelloService helloService = proxy.getProxy(HelloService.class);

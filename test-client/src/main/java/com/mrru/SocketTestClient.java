@@ -27,8 +27,10 @@ public class SocketTestClient
         HelloObject object = new HelloObject(27, "八月一日 开始手撸rpc");
 
         //调用RpcClientProxy的invoke方法
-        String result = helloService.hello(object);
-        System.out.println(result);
+        for (int i = 0; i < 20; i++) {
+            String result = helloService.hello(object);
+            System.out.println(result);
+        }
 
     }
 }
