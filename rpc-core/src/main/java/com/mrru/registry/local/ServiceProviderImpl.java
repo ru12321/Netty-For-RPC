@@ -32,11 +32,9 @@ public class ServiceProviderImpl implements ServiceProvider
 
     //注册服务信息  注册实现类, 比如参数service = HelloServiceImpl类型的helloService对象
     @Override
-    public <T> void addServiceProvider(T service, Class<T> serviceClass)
+    public <T> void addServiceProvider(T service, String serviceName)
     {
-        String serviceName = serviceClass.getCanonicalName();//获取该类的规范名称
-
-        //使用一个 Set 来保存当前有哪些对象已经被注册
+        //使用一个 Set 来保存当前有哪些对象已经被注册  获取该类的规范名称
         if (registeredService.contains(serviceName)) {
             return;
         }

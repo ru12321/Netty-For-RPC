@@ -58,19 +58,20 @@ public class RpcClientProxy implements InvocationHandler
 
         RpcResponse rpcResponse = null;
         if (client instanceof NettyClient) {
-            //当异步任务完成或者发生异常时，自动调用回调对象的回调方法。
-            CompletableFuture<RpcResponse> completableFuture = (CompletableFuture<RpcResponse>) client.sendRequest(rpcRequest);
             try {
+                //当异步任务完成或者发生异常时，自动调用回调对象的回调方法。
+                CompletableFuture<RpcResponse> completableFuture = (CompletableFuture<RpcResponse>) client.sendRequest(rpcRequest);
                 rpcResponse = completableFuture.get();
-
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("方法调用请求发送失败", e);
                 return null;
             }
         }
+
         if (client instanceof SocketClient) {
             rpcResponse = (RpcResponse) client.sendRequest(rpcRequest);
         }
+
         RpcMessageChecker.check(rpcRequest, rpcResponse);
         return rpcResponse.getData();
     }

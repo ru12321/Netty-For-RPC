@@ -22,15 +22,15 @@ public class SocketTestClient
         //生成代理对象，手动传入序列化器(默认去RpcClient查看)
         RpcClientProxy proxy = new RpcClientProxy(new SocketClient(CommonSerializer.KRYO_SERIALIZER));
         HelloService helloService = proxy.getProxy(HelloService.class);
-
         //要发送的数据
         HelloObject object = new HelloObject(27, "八月一日 开始手撸rpc");
 
         //调用RpcClientProxy的invoke方法
-        for (int i = 0; i < 20; i++) {
-            String result = helloService.hello(object);
-            System.out.println(result);
-        }
+        String res = helloService.hello(object);
+        System.out.println(res);
+
+        ByeService byeService = proxy.getProxy(ByeService.class);
+        System.out.println(byeService.bye("Netty"));
 
     }
 }

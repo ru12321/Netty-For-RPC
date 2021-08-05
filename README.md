@@ -72,6 +72,7 @@ public interface HelloService
 /**
  * 真正的接口的实现类
 **/
+@Service  //不要忘了注解
 public class HelloServiceImpl implements HelloService
 {
     private static final Logger logger = LoggerFactory.getLogger(HelloServiceImpl.class);
@@ -93,18 +94,16 @@ public class HelloServiceImpl implements HelloService
 /**
  * 测试用Netty服务提供者（服务端）
  **/
+@ServiceScan //不要忘了注解
 public class NettyTestServer
 {
     public static void main(String[] args)
     {
-        //创建实现类对象
-        HelloService helloService = new HelloServiceImpl();
-
         //启动服务，并监听端口9999的客户端连接, 手动传入序列化器(默认去RpcServer查看)
         NettyServer nettyServer = new NettyServer("127.0.0.1", 8888, CommonSerializer.PROTOBUF_SERIALIZER);
 
-        //传入服务端的地址，注册实现类对象，即对应 接口名称<-->实现类对象
-        nettyServer.publishService(helloService,HelloService.class);
+        //自动注册此根目录包下的 标有 @Service的类并进行注册
+        nettyServer.start();
     }
 
 }
@@ -130,7 +129,7 @@ public class NettyTestClient
         HelloService helloService = proxy.getProxy(HelloService.class);
 
         //要发送的数据
-        HelloObject object = new HelloObject(84, "来自Netty消费者的测试msg");
+        HelloObject object = new HelloObject(84, "8.2号学Rpc");
 
         //调用invoke，将要调用的方法 封装在RpcRequest对象中
         //连接服务器，并调用客户端 发送数据,后经过 CommonEncoder、CommonDecoder 传到Socket连接中
@@ -138,6 +137,10 @@ public class NettyTestClient
         String result = helloService.hello(object);
 
         System.out.println(result);
+
+        //再输出一个 bye,netty
+        ByeService byeService = proxy.getProxy(ByeService.class);
+        System.out.println(byeService.bye("Netty"));
 
     }
 

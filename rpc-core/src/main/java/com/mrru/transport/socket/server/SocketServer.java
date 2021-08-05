@@ -1,23 +1,18 @@
 package com.mrru.transport.socket.server;
 
-import com.mrru.transport.RpcServer;
-import com.mrru.enums.RpcError;
-import com.mrru.exception.RpcException;
-import com.mrru.registry.nacos.NacosServiceRegistry;
-import com.mrru.registry.local.ServiceProvider;
-import com.mrru.transport.RequestHandler;
-import com.mrru.registry.local.ServiceProviderImpl;
-import com.mrru.registry.nacos.ServiceRegistry;
-import com.mrru.serializer.CommonSerializer;
 import com.mrru.factory.ThreadPoolFactory;
+import com.mrru.registry.local.ServiceProviderImpl;
+import com.mrru.registry.nacos.NacosServiceRegistry;
+import com.mrru.serializer.CommonSerializer;
+import com.mrru.transport.AbstractRpcServer;
+import com.mrru.transport.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Socket方式远程方法调用的提供者（服务端）
@@ -26,17 +21,11 @@ import java.util.concurrent.*;
  * @author: 茹某
  * @date: 2021/8/1 10:45
  **/
-public class SocketServer implements RpcServer
+public class SocketServer extends AbstractRpcServer
 {
     private static final Logger logger = LoggerFactory.getLogger(SocketServer.class);
 
     private final ExecutorService threadPool;
-    private final String host;
-    private final int port;
-
-    private final ServiceRegistry serviceRegistry;
-    private final ServiceProvider serviceProvider;
-
     private final CommonSerializer serializer;
     private final RequestHandler requestHandler = new RequestHandler();
 
@@ -53,21 +42,7 @@ public class SocketServer implements RpcServer
         this.serviceProvider = new ServiceProviderImpl();
         this.serializer = CommonSerializer.getByCode(serializerCode);
         threadPool = ThreadPoolFactory.createDefaultThreadPool("socket-rpc-server");
-    }
-
-    @Override
-    public <T> void publishService(T service, Class<T> serviceClass)
-    {
-        if (serializer == null) {
-            logger.error("未设置序列化器");
-            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
-        }
-        //本地注册
-        serviceProvider.addServiceProvider(service, serviceClass);
-        //nacos注册
-        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-
-        start();
+        scanServices();
     }
 
     //注册实现类 并立即开始监听

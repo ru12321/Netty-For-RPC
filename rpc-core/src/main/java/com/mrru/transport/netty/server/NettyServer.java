@@ -1,16 +1,12 @@
 package com.mrru.transport.netty.server;
 
-import com.mrru.transport.RpcServer;
 import com.mrru.codec.CommonDecoder;
 import com.mrru.codec.CommonEncoder;
-import com.mrru.enums.RpcError;
-import com.mrru.exception.RpcException;
 import com.mrru.hook.ShutdownHook;
-import com.mrru.registry.nacos.NacosServiceRegistry;
-import com.mrru.registry.local.ServiceProvider;
 import com.mrru.registry.local.ServiceProviderImpl;
-import com.mrru.registry.nacos.ServiceRegistry;
+import com.mrru.registry.nacos.NacosServiceRegistry;
 import com.mrru.serializer.CommonSerializer;
+import com.mrru.transport.AbstractRpcServer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -22,7 +18,6 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,15 +27,9 @@ import java.util.concurrent.TimeUnit;
  * @author: 茹某
  * @date: 2021/8/1 20:51
  **/
-public class NettyServer implements RpcServer
+public class NettyServer extends AbstractRpcServer
 {
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
-
-    private final String host;
-    private final int port;
-
-    private final ServiceRegistry serviceRegistry;
-    private final ServiceProvider serviceProvider;
 
     private final CommonSerializer serializer;
 
@@ -55,26 +44,8 @@ public class NettyServer implements RpcServer
         this.serializer = CommonSerializer.getByCode(serializerCode);
         serviceRegistry = new NacosServiceRegistry();
         serviceProvider = new ServiceProviderImpl();
-    }
-
-    //向 Nacos 注册服务
-    @Override
-    public <T> void publishService(T service, Class<T> serviceClass)
-    {
-        if (serializer == null) {
-            logger.error("未设置序列化器");
-            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
-        }
-        //本地注册
-        serviceProvider.addServiceProvider(service, serviceClass);
-        //nacos注册
-        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-        /*
-            注册完一个服务后直接调用 start() 方法，这是个不太好的实现……
-            导致一个服务端只能注册一个服务，之后可以多注册几个然后再手动调用 start() 方法。
-         */
-        start();
-
+        //自动扫描注册
+        scanServices();
     }
 
     @Override

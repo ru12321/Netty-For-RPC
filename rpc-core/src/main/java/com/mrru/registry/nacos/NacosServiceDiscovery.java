@@ -2,6 +2,8 @@ package com.mrru.registry.nacos;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.mrru.enums.RpcError;
+import com.mrru.exception.RpcException;
 import com.mrru.loadbalancer.LoadBalancer;
 import com.mrru.loadbalancer.RandomLoadBalancer;
 import com.mrru.util.NacosUtil;
@@ -36,6 +38,13 @@ public class NacosServiceDiscovery implements ServiceDiscovery
         try {
             //NacosUtil工具类 去获得instance
             List<Instance> instances = NacosUtil.getAllInstance(serviceName);
+
+            //校验一下 在nacos中有无服务
+            if(instances.size() == 0) {
+                logger.error("找不到对应的服务: " + serviceName);
+                throw new RpcException(RpcError.SERVICE_NOT_FOUND);
+            }
+
             //通过自定义的负载均衡策略选择哪个服务
             Instance instance = loadBalancer.select(instances);
             return new InetSocketAddress(instance.getIp(), instance.getPort());

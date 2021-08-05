@@ -16,5 +16,5 @@ public interface RpcServer
     void start();
 
     //向 Nacos 注册服务
-    <T> void publishService(T service, Class<T> serviceClass);
+    <T> void publishService(T service, String serviceName);
 }

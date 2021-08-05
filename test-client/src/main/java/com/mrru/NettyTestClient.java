@@ -36,6 +36,10 @@ public class NettyTestClient
 
         System.out.println(result);
 
+        //再输出一个 bye,netty
+        ByeService byeService = proxy.getProxy(ByeService.class);
+        System.out.println(byeService.bye("Netty"));
+
     }
 
 }
