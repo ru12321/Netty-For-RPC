@@ -54,6 +54,9 @@ public class ChannelProvider
     //返回channel对象
     public static Channel get(InetSocketAddress inetSocketAddress, CommonSerializer serializer) throws InterruptedException {
         String key = inetSocketAddress.toString() + serializer.getCode();
+
+        //第二次 如果还是去找 同样的服务地址，以同样的序列化方式，那么channels中已经有了key，直接从map中返回其channel
+        //校验，channel如果能用，直接return这个channel，不能用就移除；然后继续向下执行创建新channel 然后连接
         if (channels.containsKey(key)) {
             Channel channel = channels.get(key);
             if(channels != null && channel.isActive()) {
@@ -77,6 +80,8 @@ public class ChannelProvider
             }
         });
 
+        //第一次寻找连接，如果channels这个ConcurrentHashMap里面没有的话，就要去自己去连接服务端，创建channel
+        //然后将创建的channel放入到 channels中
         Channel channel = null;
         try {
             channel = connect(bootstrap, inetSocketAddress);
@@ -91,9 +96,12 @@ public class ChannelProvider
     //连接服务端 添加监听器
     private static Channel connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress) throws ExecutionException, InterruptedException {
         CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
+
         bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 logger.info("客户端连接成功!");
+
+                //立即完成异步执行，并返回future结果
                 completableFuture.complete(future.channel());
             } else {
                 throw new IllegalStateException();

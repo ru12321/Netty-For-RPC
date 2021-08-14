@@ -26,7 +26,7 @@ public class ShutdownHook
 
     public void addClearAllHook()
     {
-        logger.info("关闭后将自动注销所有服务");
+        logger.info("钩子函数启动，关闭服务后将自动注销所有Nacos已有的服务...");
         /*
             使用了单例模式创建其对象，在 addClearAllHook 中，
             Runtime 对象是 JVM 虚拟机的运行时环境，调用其 addShutdownHook 方法增加一个钩子函数，

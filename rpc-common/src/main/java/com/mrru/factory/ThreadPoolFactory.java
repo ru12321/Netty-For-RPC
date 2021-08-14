@@ -32,16 +32,24 @@ public class ThreadPoolFactory
     {
     }
 
+    //创建线程池的调用
     public static ExecutorService createDefaultThreadPool(String threadNamePrefix)
     {
         return createDefaultThreadPool(threadNamePrefix, false);
     }
 
+    //创建线程池的调用
     public static ExecutorService createDefaultThreadPool(String threadNamePrefix, Boolean daemon) {
+        //创建线程池
+        //若key(threadNamePrefix)对应的value为空，会将第二个参数(lambda)的返回值存入并返回
         ExecutorService pool = threadPollsMap.computeIfAbsent(threadNamePrefix, k -> createThreadPool(threadNamePrefix, daemon));
+
+        //线程池不存在了
         if (pool.isShutdown() || pool.isTerminated()) {
             threadPollsMap.remove(threadNamePrefix);
+            //创建线程池
             pool = createThreadPool(threadNamePrefix, daemon);
+            //放入map中 线程名字，线程池对象
             threadPollsMap.put(threadNamePrefix, pool);
         }
         return pool;
@@ -64,6 +72,7 @@ public class ThreadPoolFactory
     }
 
 
+    //创建线程池的实现
     private static ExecutorService createThreadPool(String threadNamePrefix, Boolean daemon)
     {
         // 使用有界队列
@@ -84,7 +93,6 @@ public class ThreadPoolFactory
      */
     private static ThreadFactory createThreadFactory(String threadNamePrefix, Boolean daemon)
     {
-
         if (threadNamePrefix != null) {
             if (daemon != null) {
                 return new ThreadFactoryBuilder().setNameFormat(threadNamePrefix + "-%d").setDaemon(daemon).build();

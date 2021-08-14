@@ -27,6 +27,7 @@ public class ServiceProviderImpl implements ServiceProvider
     //保存的是key-value ，接口名称-实现类对象
     private final static Map<String, Object> serviceMap = new ConcurrentHashMap<>();
     //保存的是 实现类名称
+    //to create a concurrent set  类似map.keySet()
     private final static Set<String> registeredService = ConcurrentHashMap.newKeySet();
 
 
@@ -55,7 +56,7 @@ public class ServiceProviderImpl implements ServiceProvider
 //        logger.info("向接口： {} 注册服务： {}", interfaces, serviceName);
 
         serviceMap.put(serviceName, service);
-        logger.info("向接口: {} 注册服务: {}", service.getClass().getInterfaces(), serviceName);
+        logger.info("本地向接口: {} 注册服务: {}", service.getClass().getInterfaces(), serviceName);//本地向接口: [interface com.mrru.HelloService] 注册服务: com.mrru.HelloService
 
     }
 

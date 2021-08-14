@@ -42,9 +42,11 @@ public class NettyServer extends AbstractRpcServer
         this.host = host;
         this.port = port;
         this.serializer = CommonSerializer.getByCode(serializerCode);
+
         serviceRegistry = new NacosServiceRegistry();
         serviceProvider = new ServiceProviderImpl();
-        //自动扫描注册
+
+        //自动扫描main方法类的包下的有注解的类，并且注册注解值为空的类的接口，和实例类对象
         scanServices();
     }
 
@@ -59,9 +61,20 @@ public class NettyServer extends AbstractRpcServer
 
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
-            serverBootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).handler(new LoggingHandler(LogLevel.INFO)).option(ChannelOption.SO_BACKLOG, 256)
+            serverBootstrap.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    //对应的是tcp/ip协议listen函数中的backlog参数
+                    //多个客户端来的时候，服务端将不能处理的客户端连接请求放在队列中等待处理，
+                    // backlog参数指定了队列的大小
+                    .option(ChannelOption.SO_BACKLOG, 256)
 //                    .option(ChannelOption.SO_KEEPALIVE, true) 没有意义
-                    .childOption(ChannelOption.TCP_NODELAY, true).childHandler(new ChannelInitializer<SocketChannel>()
+                    //Nagle算法是将小的数据包组装为更大的帧然后进行发送，
+                    // 而不是输入一次发送一次,因此在数据包不足的时候会等待其他数据的到了，组装成大的数据包进行发送，虽
+                    // 然该方式有效提高网络的有效负载，但是却造成了延时，
+                    // 而该参数的作用就是禁止使用Nagle算法，适用于小数据即时传输
+                    .childOption(ChannelOption.TCP_NODELAY, true)
+                    .childHandler(new ChannelInitializer<SocketChannel>()
             {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception
@@ -73,7 +86,7 @@ public class NettyServer extends AbstractRpcServer
                     pipeline.addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
                     pipeline.addLast(new CommonEncoder(serializer));    //编码器处理器--多种序列化器选择
                     pipeline.addLast(new CommonDecoder());              //解码器处理器
-                    pipeline.addLast(new NettyServerHandler());         //数据处理器
+                    pipeline.addLast(new NettyServerHandler());         //配合心跳机制触发，数据处理器
                 }
             });
             ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();

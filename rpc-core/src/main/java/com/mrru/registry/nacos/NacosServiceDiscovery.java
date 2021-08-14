@@ -14,7 +14,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
- * nacos发现实现类
+ * nacos服务发现实现类
  *
  * @className: NacosServiceDiscovery
  * @author: 茹某
@@ -32,14 +32,15 @@ public class NacosServiceDiscovery implements ServiceDiscovery
         else
             this.loadBalancer = loadBalancer;
     }
+
     @Override
     public InetSocketAddress lookupService(String serviceName)
     {
         try {
-            //NacosUtil工具类 去获得instance
+            //NacosUtil工具类 去获得instance Instance是Nacos的类，表示一个具体的实例
             List<Instance> instances = NacosUtil.getAllInstance(serviceName);
 
-            //校验一下 在nacos中有无服务
+            //校验一下 Nacos中没有服务
             if(instances.size() == 0) {
                 logger.error("找不到对应的服务: " + serviceName);
                 throw new RpcException(RpcError.SERVICE_NOT_FOUND);

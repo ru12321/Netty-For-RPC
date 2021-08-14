@@ -20,7 +20,7 @@ public class NettyTestClient
     {
         //初始化客户端，手动传入序列化器(默认去RpcClient查看)，并传入proxy对象中
         //客户端不需要指定 服务端地址
-        RpcClient  client = new NettyClient(CommonSerializer.PROTOBUF_SERIALIZER, new RandomLoadBalancer());
+        RpcClient client = new NettyClient(CommonSerializer.KRYO_SERIALIZER, new RandomLoadBalancer());
         RpcClientProxy proxy = new RpcClientProxy(client);
 
         //生成代理对象
@@ -41,5 +41,4 @@ public class NettyTestClient
         System.out.println(byeService.bye("Netty"));
 
     }
-
 }

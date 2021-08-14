@@ -57,6 +57,7 @@ public class RpcClientProxy implements InvocationHandler
                                                 , false);
 
         RpcResponse rpcResponse = null;
+
         if (client instanceof NettyClient) {
             try {
                 //当异步任务完成或者发生异常时，自动调用回调对象的回调方法。
@@ -72,6 +73,7 @@ public class RpcClientProxy implements InvocationHandler
             rpcResponse = (RpcResponse) client.sendRequest(rpcRequest);
         }
 
+        //返回的对象 和 发送的对象 进行校验
         RpcMessageChecker.check(rpcRequest, rpcResponse);
         return rpcResponse.getData();
     }

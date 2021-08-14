@@ -32,6 +32,7 @@ public class SingletonFactory
                 }
             }
         }
+        //instance强转为clazz类型
         return clazz.cast(instance);
     }
 

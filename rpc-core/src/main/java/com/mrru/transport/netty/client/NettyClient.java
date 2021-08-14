@@ -67,6 +67,7 @@ public class NettyClient implements RpcClient
     public NettyClient(Integer serializerCode, LoadBalancer loadBalancer) {
         this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
         this.serializer = CommonSerializer.getByCode(serializerCode);
+
         this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
     }
 
@@ -84,6 +85,7 @@ public class NettyClient implements RpcClient
         try {
             //从nacos发现类 获得服务地址
             InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
+
             //初始化客户端，并且连接服务器，通过同步工具类countDownLatch，设置了重新连接等待机制
             Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
 
@@ -91,13 +93,16 @@ public class NettyClient implements RpcClient
                 group.shutdownGracefully();
                 return null;
             }
+            //将请求号和新创建的resultFuture，作为键值对放入unprocessedRequests conCurrentHashmap中
             unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);
+
+            //通过channel发送数据出去，添加监听器
             channel.writeAndFlush(rpcRequest).addListener((ChannelFutureListener)future1 -> {
                 if (future1.isSuccess()) {
                     logger.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
                 } else {
                     future1.channel().close();
-                    //异步执行不正常结束
+                    //异步执行不正常的结束
                     resultFuture.completeExceptionally(future1.cause());
                     logger.error("发送消息时有错误发生: ", future1.cause());
                 }
@@ -107,6 +112,7 @@ public class NettyClient implements RpcClient
             logger.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
         }
+        //response放在resultFuture中 返回
         return resultFuture;
     }
 

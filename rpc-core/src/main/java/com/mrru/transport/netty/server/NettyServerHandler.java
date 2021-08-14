@@ -35,17 +35,19 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest>
     protected void channelRead0(ChannelHandlerContext ctx, RpcRequest msg) throws Exception
     {
         try {
+            //对客户端心跳检测的回应
             if (msg.getHeartBeat()) {
                 logger.info("接收到客户端心跳包...");
                 return;
             }
             logger.info("服务器接收到请求: {}", msg);
-            //拿到实现类对象
-            //调用实现类对象的 封装在RpcRequest（这里是msg）中的方法
+            //拿到真正的实现类对象
+            //调用真正的实现类对象的 封装在RpcRequest（这里是msg）中的方法
             //获得 实现类方法的返回结果
             Object result = requestHandler.handle(msg);
             //返回消息给客户端
             if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                //RpcResponse.success(result, msg.getRequestId()) 返回的是rpcResponse对象
                 ctx.writeAndFlush(RpcResponse.success(result, msg.getRequestId()));
             } else {
                 logger.error("通道不可写");

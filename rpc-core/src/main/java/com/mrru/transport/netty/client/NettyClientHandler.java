@@ -33,7 +33,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
         this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
     }
 
-    //读处理器：将服务端返回的消息 放在全局的AttributeKey中
+    //读处理器：将服务端返回的消息
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcResponse msg) throws Exception
     {
@@ -54,19 +54,20 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
         ctx.close();
     }
 
-    //写处理器 Channel 5秒内没有写操作，就进行心跳触发
+    //Channel 5秒内没有写操作，就进行心跳触发
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
     {
         if (evt instanceof IdleStateEvent) {
             IdleState state = ((IdleStateEvent) evt).state();
+
             if (state == IdleState.WRITER_IDLE) {
                 logger.info("发送心跳包 [{}]", ctx.channel().remoteAddress());
 
                 Channel channel = ChannelProvider.get((InetSocketAddress) ctx.channel().remoteAddress(), CommonSerializer.getByCode(CommonSerializer.DEFAULT_SERIALIZER));
 
+                //包装一个只有心跳为true属性的rpcRequest
                 RpcRequest rpcRequest = new RpcRequest();
-
                 rpcRequest.setHeartBeat(true);
 
                 channel.writeAndFlush(rpcRequest).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
